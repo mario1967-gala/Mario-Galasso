@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Registro Presenze{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Registro Presenze</h2>
+        <button class="btn btn-primary" onclick="showAddPresenzaModal()">+ Registra Presenza</button>
+    </div>
+
+    <div class="filters">
+        <select id="filterStudente" onchange="loadPresenze()">
+            <option value="">Tutti gli studenti</option>
+        </select>
+        <input type="date" id="filterData" onchange="loadPresenze()">
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Studente</th>
+                    <th>Tipo</th>
+                    <th>Ora Ingresso</th>
+                    <th>Ora Uscita</th>
+                    <th>Giustificata</th>
+                    <th>Note</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="presenze-tbody">
+                <tr>
+                    <td colspan="8" class="text-center">Caricamento...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Aggiungi/Modifica Presenza -->
+<div id="presenzaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Registra Presenza</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <form id="presenzaForm" onsubmit="savePresenza(event)">
+            <input type="hidden" id="presenzaId">
+
+            <div class="form-group">
+                <label for="studente_id">Studente *</label>
+                <select id="studente_id" required>
+                    <option value="">Seleziona studente</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="data">Data *</label>
+                <input type="date" id="data" required>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo">Tipo *</label>
+                <select id="tipo" onchange="toggleTimeFields()" required>
+                    <option value="presente">Presente</option>
+                    <option value="assente">Assente</option>
+                    <option value="ritardo">Ritardo</option>
+                    <option value="uscita_anticipata">Uscita Anticipata</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="ora_ingresso_group" style="display: none;">
+                <label for="ora_ingresso">Ora Ingresso</label>
+                <input type="time" id="ora_ingresso">
+            </div>
+
+            <div class="form-group" id="ora_uscita_group" style="display: none;">
+                <label for="ora_uscita">Ora Uscita</label>
+                <input type="time" id="ora_uscita">
+            </div>
+
+            <div class="form-group">
+                <label for="giustificata">
+                    <input type="checkbox" id="giustificata">
+                    Giustificata
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="note">Note</label>
+                <textarea id="note" rows="3"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/presenze.js') }}"></script>
+{% endblock %}

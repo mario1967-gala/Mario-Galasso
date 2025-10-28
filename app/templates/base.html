@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestione Didattica{% endblock %} - Terza Liceo Scientifico</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>Gestione Didattica - 3° Liceo Scientifico</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/studenti" class="nav-link">Studenti</a></li>
+                <li><a href="/materie" class="nav-link">Materie</a></li>
+                <li><a href="/voti" class="nav-link">Voti</a></li>
+                <li><a href="/presenze" class="nav-link">Presenze</a></li>
+                <li><a href="/compiti" class="nav-link">Compiti</a></li>
+                <li><a href="/materiali" class="nav-link">Materiali</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 Sistema di Gestione Didattica - Terza Liceo Scientifico</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

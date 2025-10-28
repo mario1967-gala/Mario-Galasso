@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Materiale Didattico{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Materiale Didattico</h2>
+        <button class="btn btn-primary" onclick="showAddMaterialeModal()">+ Aggiungi Materiale</button>
+    </div>
+
+    <div class="filters">
+        <select id="filterMateria" onchange="loadMateriali()">
+            <option value="">Tutte le materie</option>
+        </select>
+        <select id="filterTipo" onchange="loadMateriali()">
+            <option value="">Tutti i tipi</option>
+            <option value="dispensa">Dispense</option>
+            <option value="slide">Slide</option>
+            <option value="esercizi">Esercizi</option>
+            <option value="link">Link</option>
+            <option value="video">Video</option>
+        </select>
+    </div>
+
+    <div class="materiali-grid" id="materiali-grid">
+        <div class="loading">Caricamento...</div>
+    </div>
+</div>
+
+<!-- Modal Aggiungi/Modifica Materiale -->
+<div id="materialeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Aggiungi Materiale</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <form id="materialeForm" onsubmit="saveMateriale(event)">
+            <input type="hidden" id="materialeId">
+
+            <div class="form-group">
+                <label for="materia_id">Materia *</label>
+                <select id="materia_id" required>
+                    <option value="">Seleziona materia</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="titolo">Titolo *</label>
+                <input type="text" id="titolo" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descrizione">Descrizione</label>
+                <textarea id="descrizione" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo">Tipo *</label>
+                <select id="tipo" required>
+                    <option value="dispensa">Dispensa</option>
+                    <option value="slide">Slide</option>
+                    <option value="esercizi">Esercizi</option>
+                    <option value="link">Link</option>
+                    <option value="video">Video</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="contenuto">URL o Contenuto</label>
+                <textarea id="contenuto" rows="3" placeholder="Inserisci link o testo"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/materiali.js') }}"></script>
+{% endblock %}

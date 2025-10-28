@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Materie{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Gestione Materie</h2>
+        <button class="btn btn-primary" onclick="showAddMateriaModal()">+ Aggiungi Materia</button>
+    </div>
+
+    <div class="cards-grid" id="materie-grid">
+        <div class="loading">Caricamento...</div>
+    </div>
+</div>
+
+<!-- Modal Aggiungi/Modifica Materia -->
+<div id="materiaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Aggiungi Materia</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <form id="materiaForm" onsubmit="saveMateria(event)">
+            <input type="hidden" id="materiaId">
+
+            <div class="form-group">
+                <label for="nome">Nome Materia *</label>
+                <input type="text" id="nome" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descrizione">Descrizione</label>
+                <textarea id="descrizione" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="ore_settimanali">Ore Settimanali</label>
+                <input type="number" id="ore_settimanali" min="1" max="20">
+            </div>
+
+            <div class="form-group">
+                <label for="docente">Docente</label>
+                <input type="text" id="docente">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/materie.js') }}"></script>
+{% endblock %}

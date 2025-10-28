@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Dashboard</h2>
+        <p>Benvenuto nel sistema di gestione didattica della classe terza</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👨‍🎓</div>
+            <div class="stat-info">
+                <h3 id="stat-studenti">0</h3>
+                <p>Studenti</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-info">
+                <h3 id="stat-materie">0</h3>
+                <p>Materie</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-info">
+                <h3 id="stat-voti">0</h3>
+                <p>Voti Registrati</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+                <h3 id="stat-compiti">0</h3>
+                <p>Compiti da Fare</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info">
+                <h3 id="stat-media">0.0</h3>
+                <p>Media Classe</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-sections">
+        <div class="dashboard-section">
+            <h3>Accesso Rapido</h3>
+            <div class="quick-links">
+                <a href="/studenti" class="quick-link-card">
+                    <span class="icon">👨‍🎓</span>
+                    <span>Gestisci Studenti</span>
+                </a>
+                <a href="/materie" class="quick-link-card">
+                    <span class="icon">📚</span>
+                    <span>Gestisci Materie</span>
+                </a>
+                <a href="/voti" class="quick-link-card">
+                    <span class="icon">📝</span>
+                    <span>Registro Voti</span>
+                </a>
+                <a href="/presenze" class="quick-link-card">
+                    <span class="icon">✓</span>
+                    <span>Registro Presenze</span>
+                </a>
+                <a href="/compiti" class="quick-link-card">
+                    <span class="icon">📋</span>
+                    <span>Compiti e Verifiche</span>
+                </a>
+                <a href="/materiali" class="quick-link-card">
+                    <span class="icon">📑</span>
+                    <span>Materiale Didattico</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Carica statistiche
+async function loadStats() {
+    try {
+        const response = await fetch('/api/statistiche');
+        const stats = await response.json();
+
+        document.getElementById('stat-studenti').textContent = stats.totale_studenti;
+        document.getElementById('stat-materie').textContent = stats.totale_materie;
+        document.getElementById('stat-voti').textContent = stats.totale_voti;
+        document.getElementById('stat-compiti').textContent = stats.compiti_da_fare;
+        document.getElementById('stat-media').textContent = stats.media_classe.toFixed(2);
+    } catch (error) {
+        console.error('Errore nel caricamento delle statistiche:', error);
+    }
+}
+
+// Carica le statistiche all'avvio
+loadStats();
+</script>
+{% endblock %}

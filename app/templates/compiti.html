@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Compiti e Verifiche{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Compiti e Verifiche</h2>
+        <button class="btn btn-primary" onclick="showAddCompitoModal()">+ Aggiungi Compito</button>
+    </div>
+
+    <div class="filters">
+        <select id="filterMateria" onchange="loadCompiti()">
+            <option value="">Tutte le materie</option>
+        </select>
+        <label>
+            <input type="checkbox" id="filterCompletati" onchange="loadCompiti()">
+            Mostra completati
+        </label>
+    </div>
+
+    <div class="compiti-grid" id="compiti-grid">
+        <div class="loading">Caricamento...</div>
+    </div>
+</div>
+
+<!-- Modal Aggiungi/Modifica Compito -->
+<div id="compitoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Aggiungi Compito</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <form id="compitoForm" onsubmit="saveCompito(event)">
+            <input type="hidden" id="compitoId">
+
+            <div class="form-group">
+                <label for="materia_id">Materia *</label>
+                <select id="materia_id" required>
+                    <option value="">Seleziona materia</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="titolo">Titolo *</label>
+                <input type="text" id="titolo" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descrizione">Descrizione</label>
+                <textarea id="descrizione" rows="4"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo">Tipo</label>
+                <select id="tipo">
+                    <option value="compito">Compito</option>
+                    <option value="verifica_scritta">Verifica Scritta</option>
+                    <option value="verifica_orale">Verifica Orale</option>
+                    <option value="progetto">Progetto</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="data_scadenza">Data Scadenza *</label>
+                <input type="date" id="data_scadenza" required>
+            </div>
+
+            <div class="form-group">
+                <label for="completato">
+                    <input type="checkbox" id="completato">
+                    Completato
+                </label>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/compiti.js') }}"></script>
+{% endblock %}
