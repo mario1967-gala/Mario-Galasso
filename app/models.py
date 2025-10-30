@@ -8,7 +8,7 @@ class Studente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     cognome = db.Column(db.String(100), nullable=False)
-    data_nascita = db.Column(db.Date, nullable=False)
+    data_nascita = db.Column(db.Date, nullable=True)
     codice_fiscale = db.Column(db.String(16), unique=True)
     email = db.Column(db.String(120), unique=True)
     telefono = db.Column(db.String(20))
