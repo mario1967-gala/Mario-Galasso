@@ -1,0 +1,357 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║           🎯 GUIDA COMPLETA: DA DOVE ESEGUIRE I COMANDI                 ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  RISPOSTA BREVE:                                                         │
+│  ✅ Esegui TUTTI i comandi dal TERMINALE del TUO COMPUTER               │
+│  ❌ NON su GitHub (il sito web)                                         │
+└──────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════
+
+🔍 CAPIRE LA DIFFERENZA
+
+┌────────────────────────────────────────────────────────────────────────┐
+│  🌐 GITHUB (Sito Web - github.com)                                    │
+├────────────────────────────────────────────────────────────────────────┤
+│  Cos'è:      "Hard disk online" per il codice                         │
+│  Scopo:      Salvare e condividere il codice                          │
+│  Cosa fai:   Guardi il codice, scarichi il repository                 │
+│  Comandi:    NESSUNO! È solo un sito web                              │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│  💻 TERMINALE LOCALE (Il Tuo Computer)                                │
+├────────────────────────────────────────────────────────────────────────┤
+│  Cos'è:      Riga di comando sul tuo computer                         │
+│  Scopo:      Eseguire comandi e programmi                             │
+│  Cosa fai:   Cloni, installi, avvii l'applicazione                    │
+│  Comandi:    TUTTI i comandi vanno qui!                               │
+└────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════
+
+📋 PROCEDURA COMPLETA - PASSO PER PASSO
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 1: APRI IL TERMINALE SUL TUO COMPUTER                             ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📍 Windows:
+   1. Premi tasto Windows
+   2. Digita "cmd" o "PowerShell"
+   3. Premi INVIO
+
+   Vedrai qualcosa tipo:
+   C:\Users\TuoNome>
+
+📍 Mac:
+   1. Premi Cmd + Spazio
+   2. Digita "Terminal"
+   3. Premi INVIO
+
+   Vedrai qualcosa tipo:
+   username@MacBook ~ %
+
+📍 Linux:
+   1. Premi Ctrl + Alt + T
+   oppure cerca "Terminal" nelle applicazioni
+
+   Vedrai qualcosa tipo:
+   username@computer:~$
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 2: DECIDI DOVE SALVARE IL PROGETTO                                ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Scegli una cartella dove vuoi salvare il progetto.
+Esempio: Documenti, Desktop, una cartella "progetti", ecc.
+
+Windows:
+    cd C:\Users\TuoNome\Documenti
+    # oppure
+    cd Desktop
+
+Mac/Linux:
+    cd ~/Documents
+    # oppure
+    cd ~/Desktop
+    # oppure
+    mkdir ~/progetti
+    cd ~/progetti
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 3: SCARICA IL CODICE DA GITHUB                                    ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+⚠️  Questo è l'UNICO momento in cui usi GitHub!
+    Stai scaricando il codice SUL TUO COMPUTER.
+
+Nel terminale, digita:
+
+    git clone https://github.com/mario1967-gala/Mario-Galasso.git
+
+Cosa succede:
+    ✓ Git scarica il codice da GitHub
+    ✓ Crea una cartella "Mario-Galasso" SUL TUO COMPUTER
+    ✓ Il codice ora è sul tuo computer, non più solo su GitHub
+
+Vedrai:
+    Cloning into 'Mario-Galasso'...
+    remote: Enumerating objects: 50, done.
+    remote: Counting objects: 100% (50/50), done.
+    ...
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 4: ENTRA NELLA CARTELLA DEL PROGETTO                              ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Nel terminale, digita:
+
+    cd Mario-Galasso
+
+Ora sei DENTRO la cartella del progetto sul tuo computer.
+
+Verifica con:
+
+    Windows:
+        dir
+
+    Mac/Linux:
+        ls
+
+Dovresti vedere:
+    run.py
+    requirements.txt
+    app/
+    README.md
+    ...
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 5: PASSA AL BRANCH CORRETTO                                       ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Nel terminale, digita:
+
+    git checkout claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM
+
+Vedrai:
+    Switched to branch 'claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM'
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 6: INSTALLA LE DIPENDENZE                                         ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Nel terminale, digita:
+
+    pip install -r requirements.txt
+
+oppure se non funziona:
+
+    pip3 install -r requirements.txt
+
+Vedrai:
+    Collecting Flask==3.0.0
+    Downloading Flask-3.0.0...
+    Installing collected packages: Flask, ...
+    Successfully installed Flask-3.0.0 ...
+
+⏱️  Aspetta che finisca (può richiedere 1-2 minuti)
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 7: (OPZIONALE) POPOLA IL DATABASE                                 ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Nel terminale, digita:
+
+    python seed_data.py
+
+oppure:
+
+    python3 seed_data.py
+
+Vedrai:
+    Creazione dati di esempio...
+    ✓ Create 10 materie
+    ✓ Creati 10 studenti
+    ✓ Creati 143 voti
+    ...
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 8: AVVIA L'APPLICAZIONE                                           ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Nel terminale, digita:
+
+    python run.py
+
+oppure:
+
+    python3 run.py
+
+🎉 VEDRAI QUESTO:
+
+    * Serving Flask app 'app'
+    * Debug mode: on
+    WARNING: This is a development server.
+    * Running on http://127.0.0.1:5000
+    Press CTRL+C to quit
+
+✅ L'applicazione ORA STA GIRANDO sul tuo computer!
+
+⚠️  NON CHIUDERE IL TERMINALE!
+    Se lo chiudi, l'applicazione si ferma.
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 9: APRI IL BROWSER                                                ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Apri il tuo browser (Chrome, Firefox, Safari, Edge, ecc.)
+
+Nella barra degli indirizzi, scrivi:
+
+    http://localhost:5000
+
+oppure:
+
+    http://127.0.0.1:5000
+
+Premi INVIO
+
+🎉 VEDRAI LA DASHBOARD DELL'APPLICAZIONE!
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  FASE 10: USA L'APPLICAZIONE                                            ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Ora puoi:
+✓ Vedere la dashboard con le statistiche
+✓ Cliccare su "Studenti" nel menu
+✓ Cliccare su "📷 Import da Screenshot"
+✓ Gestire materie, voti, presenze, compiti, materiali
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  PER FERMARE L'APPLICAZIONE                                             ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Torna al terminale e premi:
+
+    Ctrl + C
+
+L'applicazione si fermerà.
+
+══════════════════════════════════════════════════════════════════════════
+
+🎯 RIEPILOGO: DOVE ESEGUI COSA
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  GITHUB (Sito Web)                                                       │
+├──────────────────────────────────────────────────────────────────────────┤
+│  ❌ NON esegui comandi qui                                              │
+│  ✓ Guardi il codice                                                     │
+│  ✓ Vedi i file                                                          │
+│  ✓ Leggi il README                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  TERMINALE LOCALE (Tuo Computer)                                         │
+├──────────────────────────────────────────────────────────────────────────┤
+│  ✅ Esegui TUTTI i comandi qui:                                         │
+│     • git clone ...                                                      │
+│     • cd Mario-Galasso                                                   │
+│     • git checkout ...                                                   │
+│     • pip install -r requirements.txt                                    │
+│     • python seed_data.py                                                │
+│     • python run.py                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  BROWSER (Chrome, Firefox, Safari, ecc.)                                 │
+├──────────────────────────────────────────────────────────────────────────┤
+│  ✅ Usi l'applicazione qui:                                             │
+│     • http://localhost:5000                                              │
+└──────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════
+
+❓ DOMANDE FREQUENTI
+
+Q: "Devo avere GitHub aperto nel browser?"
+A: NO! GitHub serve solo per scaricare il codice con git clone.
+   Dopo averlo scaricato, puoi chiudere GitHub.
+
+Q: "L'applicazione va online?"
+A: NO! Gira solo sul TUO computer. È accessibile solo da te su localhost.
+
+Q: "Devo pagare GitHub?"
+A: NO! GitHub è gratuito e lo usi solo per scaricare il codice.
+
+Q: "Se chiudo il terminale, l'app continua a funzionare?"
+A: NO! Devi tenere il terminale aperto mentre usi l'app.
+
+Q: "Come faccio ad aprire più terminali?"
+A: Puoi aprire una seconda finestra del terminale se devi eseguire altri comandi.
+
+Q: "Dove sono salvati i dati?"
+A: Sul TUO computer, nella cartella Mario-Galasso/instance/didattica.db
+
+══════════════════════════════════════════════════════════════════════════
+
+🎓 ESEMPIO COMPLETO - COPY & PASTE
+
+Apri il terminale e copia questi comandi uno alla volta:
+
+    # 1. Vai nella cartella documenti (o dove preferisci)
+    cd ~/Documents    # Mac/Linux
+    cd C:\Users\TuoNome\Documents    # Windows
+
+    # 2. Scarica il codice da GitHub
+    git clone https://github.com/mario1967-gala/Mario-Galasso.git
+
+    # 3. Entra nella cartella
+    cd Mario-Galasso
+
+    # 4. Passa al branch corretto
+    git checkout claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM
+
+    # 5. Installa dipendenze
+    pip3 install -r requirements.txt
+
+    # 6. Popola database
+    python3 seed_data.py
+
+    # 7. Avvia applicazione
+    python3 run.py
+
+    # 8. Apri browser su: http://localhost:5000
+
+══════════════════════════════════════════════════════════════════════════
+
+✅ CHECKLIST VISIVA
+
+Prima di eseguire i comandi:
+[ ] Terminale aperto sul TUO computer
+[ ] GitHub chiuso (non serve più dopo git clone)
+
+Mentre esegui i comandi:
+[ ] Sei nella cartella giusta (Mario-Galasso)
+[ ] Vedi i messaggi di installazione
+[ ] Nessun errore
+
+Quando avvii l'app:
+[ ] Vedi "Running on http://127.0.0.1:5000"
+[ ] Terminale ancora aperto
+[ ] Browser aperto su localhost:5000
+[ ] Vedi la dashboard
+
+══════════════════════════════════════════════════════════════════════════
+
+🎉 BUON UTILIZZO!
+
+Ricorda:
+- GitHub = dove il codice è salvato (online)
+- Terminale = dove esegui i comandi (tuo computer)
+- Browser = dove usi l'applicazione (tuo computer, localhost)
+
+══════════════════════════════════════════════════════════════════════════

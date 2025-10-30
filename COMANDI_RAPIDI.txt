@@ -1,0 +1,53 @@
+═══════════════════════════════════════════════════════════════════
+  📋 COMANDI RAPIDI - COPIA E INCOLLA NEL TERMINALE LOCALE
+═══════════════════════════════════════════════════════════════════
+
+⚠️  IMPORTANTE: Questi comandi vanno eseguiti nel TERMINALE del TUO
+   COMPUTER, NON su GitHub!
+
+───────────────────────────────────────────────────────────────────
+  STEP 1: SCARICA IL CODICE
+───────────────────────────────────────────────────────────────────
+
+git clone https://github.com/mario1967-gala/Mario-Galasso.git
+cd Mario-Galasso
+git checkout claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM
+
+───────────────────────────────────────────────────────────────────
+  STEP 2: INSTALLA E AVVIA
+───────────────────────────────────────────────────────────────────
+
+pip3 install -r requirements.txt
+python3 seed_data.py
+python3 run.py
+
+───────────────────────────────────────────────────────────────────
+  STEP 3: APRI BROWSER
+───────────────────────────────────────────────────────────────────
+
+http://localhost:5000
+
+═══════════════════════════════════════════════════════════════════
+
+🔧 SE PYTHON3 NON FUNZIONA, USA PYTHON:
+
+pip install -r requirements.txt
+python seed_data.py
+python run.py
+
+═══════════════════════════════════════════════════════════════════
+
+💡 DOVE ESEGUIRE:
+
+❌ NON qui → GitHub (il sito web)
+✅ SÌ qui   → Terminale/CMD/PowerShell sul tuo computer
+
+═══════════════════════════════════════════════════════════════════
+
+📍 COME APRIRE IL TERMINALE:
+
+Windows:   Tasto Windows → digita "cmd" → INVIO
+Mac:       Cmd + Spazio → digita "Terminal" → INVIO
+Linux:     Ctrl + Alt + T
+
+═══════════════════════════════════════════════════════════════════
