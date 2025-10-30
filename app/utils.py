@@ -52,26 +52,42 @@ class StudentExtractor:
             # Prompt per Claude
             prompt = """Analizza questa immagine che contiene una lista di studenti.
 
-Estrai i seguenti dati per ogni studente:
-- Nome
-- Cognome
-- Data di nascita (formato DD/MM/YYYY)
+La lista può avere diversi formati. Estrai TUTTI gli studenti che trovi.
+
+Per ogni studente, estrai i dati disponibili:
+- Cognome (obbligatorio)
+- Nome (obbligatorio)
+- Data di nascita (se presente, formato DD/MM/YYYY)
 - Email (se presente)
 - Telefono (se presente)
+
+IMPORTANTE:
+- Se vedi numeri progressivi (1, 2, 3...) ignorali, servono solo come numerazione
+- Anche se ci sono SOLO cognome e nome, includili comunque
+- Se manca la data di nascita, omettila dal JSON
 
 Rispondi SOLO con un JSON array nel formato:
 [
   {
-    "nome": "Mario",
     "cognome": "Rossi",
+    "nome": "Mario",
     "data_nascita": "15/03/2007",
     "email": "mario.rossi@example.com",
     "telefono": "3331234567"
+  },
+  {
+    "cognome": "Bianchi",
+    "nome": "Laura"
   }
 ]
 
-Se un campo non è presente, omettilo dal JSON.
-Rispondi SOLO con il JSON, nessun altro testo."""
+Esempi di formati riconosciuti:
+- "1. Rossi Mario"
+- "2  Bianchi Laura"
+- "Verdi Giuseppe - 08/01/2007"
+- "Neri Anna, anna.neri@example.com"
+
+Rispondi SOLO con il JSON array, nessun altro testo."""
 
             # Chiamata all'API di Claude
             message = client.messages.create(
@@ -114,10 +130,13 @@ Rispondi SOLO con il JSON, nessun altro testo."""
             # Parse del JSON
             students_data = json.loads(json_str)
 
-            # Converti le date nel formato corretto
+            # Converti le date nel formato corretto (se presenti)
             for student in students_data:
                 if 'data_nascita' in student and student['data_nascita']:
                     student['data_nascita'] = StudentExtractor._parse_date(student['data_nascita'])
+                else:
+                    # Se non c'è data di nascita, rimuovi il campo o mettilo a None
+                    student['data_nascita'] = None
 
             return students_data
 
