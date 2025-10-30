@@ -1,0 +1,240 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                     📁 DOVE SONO I FILE?                                ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+🎯 I FILE SONO QUI!
+
+Repository GitHub: mario1967-gala/Mario-Galasso
+Branch: claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM
+
+══════════════════════════════════════════════════════════════════════════
+
+🚀 AVVIO VELOCE (3 COMANDI)
+
+Se hai già clonato il repository:
+
+    cd Mario-Galasso
+    pip3 install -r requirements.txt
+    python3 run.py
+
+Poi apri: http://localhost:5000
+
+══════════════════════════════════════════════════════════════════════════
+
+📖 ISTRUZIONI COMPLETE
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  PASSO 1: VERIFICA SE HAI I FILE                                     ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+Esegui lo script di verifica:
+
+    Linux/Mac:
+    ./verifica.sh
+
+    Windows:
+    verifica.bat
+
+Se vedi "✅ TUTTO OK!" → Vai al PASSO 2
+Se vedi errori → Vai al PASSO 1b
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  PASSO 1b: CLONA IL REPOSITORY (se necessario)                       ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+    git clone https://github.com/mario1967-gala/Mario-Galasso.git
+    cd Mario-Galasso
+    git checkout claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  PASSO 2: INSTALLA DIPENDENZE                                        ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+    pip3 install -r requirements.txt
+
+    oppure (se pip3 non funziona):
+
+    pip install -r requirements.txt
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  PASSO 3: POPOLA DATABASE (OPZIONALE)                                ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+Per avere dati di esempio (10 studenti, 10 materie, voti, ecc.):
+
+    python3 seed_data.py
+
+    oppure:
+
+    python seed_data.py
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  PASSO 4: AVVIA L'APPLICAZIONE                                       ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+    python3 run.py
+
+    oppure:
+
+    python run.py
+
+Vedrai un messaggio tipo:
+    * Running on http://127.0.0.1:5000
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  PASSO 5: APRI IL BROWSER                                            ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+Vai su uno di questi indirizzi:
+
+    http://localhost:5000
+    http://127.0.0.1:5000
+
+══════════════════════════════════════════════════════════════════════════
+
+📁 STRUTTURA FILE CHE DOVRESTI VEDERE
+
+Mario-Galasso/
+├── run.py                    ← ESEGUI QUESTO FILE
+├── requirements.txt          ← Lista dipendenze
+├── config.py
+├── seed_data.py             ← Popola database con dati esempio
+├── test_import.py           ← Testa import studenti
+├── verifica.sh              ← Script verifica (Linux/Mac)
+├── verifica.bat             ← Script verifica (Windows)
+├── README.md                ← Documentazione principale
+├── AVVIO_RAPIDO.md          ← Guida avvio
+├── IMPORT_STUDENTI.md       ← Guida import studenti
+├── DOVE_SONO_I_FILE.txt     ← Questo file
+├── .gitignore
+│
+├── app/                     ← Codice applicazione
+│   ├── __init__.py
+│   ├── models.py            ← Database models
+│   ├── routes.py            ← API endpoints
+│   ├── utils.py             ← Import studenti
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── style.css
+│   │   ├── js/
+│   │   │   ├── main.js
+│   │   │   ├── studenti.js
+│   │   │   ├── materie.js
+│   │   │   ├── voti.js
+│   │   │   ├── presenze.js
+│   │   │   ├── compiti.js
+│   │   │   ├── materiali.js
+│   │   │   └── import_studenti.js
+│   │   └── uploads/
+│   └── templates/
+│       ├── base.html
+│       ├── index.html
+│       ├── studenti.html
+│       ├── materie.html
+│       ├── voti.html
+│       ├── presenze.html
+│       ├── compiti.html
+│       ├── materiali.html
+│       └── import_studenti.html
+│
+└── instance/
+    └── didattica.db         ← Database (creato automaticamente)
+
+══════════════════════════════════════════════════════════════════════════
+
+❓ PROBLEMI COMUNI
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  "Non vedo i file" / "Cartella vuota"                                ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+1. Controlla di essere nella directory corretta:
+
+   pwd                    (Linux/Mac)
+   cd                     (Windows)
+
+   Dovresti vedere: /percorso/Mario-Galasso
+
+2. Controlla il branch git:
+
+   git branch
+
+   Dovresti vedere: * claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM
+
+3. Passa al branch corretto:
+
+   git checkout claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  "Comando 'python' non trovato"                                      ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+Prova con python3:
+
+    python3 run.py
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  "ModuleNotFoundError" o errori di import                            ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+Le dipendenze non sono installate:
+
+    pip3 install -r requirements.txt
+
+╔═══════════════════════════════════════════════════════════════════════╗
+║  "Porta 5000 già in uso"                                             ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+Modifica run.py alla riga finale:
+
+    app.run(debug=True, host='0.0.0.0', port=5001)
+
+Poi usa: http://localhost:5001
+
+══════════════════════════════════════════════════════════════════════════
+
+🎯 TEST RAPIDO
+
+Per verificare che tutto funzioni senza avviare il server:
+
+    python3 -c "from app import create_app; app = create_app(); print('✓ OK!')"
+
+Se vedi "✓ OK!" tutto è a posto!
+
+══════════════════════════════════════════════════════════════════════════
+
+📞 ANCORA BLOCCATO?
+
+1. Esegui lo script di verifica:
+   ./verifica.sh (Linux/Mac) o verifica.bat (Windows)
+
+2. Leggi il file AVVIO_RAPIDO.md:
+   cat AVVIO_RAPIDO.md
+
+3. Controlla il README:
+   cat README.md
+
+══════════════════════════════════════════════════════════════════════════
+
+✅ CHECKLIST PRIMO AVVIO
+
+[ ] Repository clonato
+[ ] Branch corretto (claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM)
+[ ] File visibili (run.py, app/, ecc.)
+[ ] Python installato (3.8+)
+[ ] Dipendenze installate (pip install -r requirements.txt)
+[ ] Database popolato (opzionale: python seed_data.py)
+[ ] Server avviato (python run.py)
+[ ] Browser aperto (http://localhost:5000)
+[ ] Dashboard visibile!
+
+══════════════════════════════════════════════════════════════════════════
+
+🎉 BUON UTILIZZO!
+
+Una volta avviata l'applicazione:
+- Dashboard: http://localhost:5000
+- Import Studenti: Menu Studenti → "📷 Import da Screenshot"
+- Materie, Voti, Presenze, Compiti, Materiali: tutti nel menu principale
+
+══════════════════════════════════════════════════════════════════════════
