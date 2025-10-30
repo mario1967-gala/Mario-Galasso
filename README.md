@@ -130,17 +130,25 @@ La dashboard mostra una panoramica generale con:
 
 Importa rapidamente multipli studenti in due modalità:
 
-#### Modalità 1: Upload Screenshot
+#### Modalità 1: Upload Screenshot con Claude AI Vision 🤖
 - Carica un'immagine/screenshot con la lista studenti
-- Il sistema estrae automaticamente i dati usando OCR
+- **Claude AI Vision** analizza l'immagine ed estrae automaticamente i dati
+- Molto più accurato e intelligente di OCR tradizionali
 - Verifica e modifica i dati estratti
 - Importa con un click
 
-**Requisiti**: Tesseract OCR (opzionale)
-- Ubuntu/Debian: `sudo apt-get install tesseract-ocr tesseract-ocr-ita`
-- macOS: `brew install tesseract tesseract-lang`
+**Requisiti**: Chiave API Anthropic (con $5 di crediti gratuiti!)
+- Registrati su [console.anthropic.com](https://console.anthropic.com)
+- Ottieni la tua chiave API
+- Vedi [CLAUDE_VISION_SETUP.md](CLAUDE_VISION_SETUP.md) per istruzioni complete
 
-#### Modalità 2: Incolla Testo
+**Vantaggi:**
+- ✅ Più accurato del OCR tradizionale
+- ✅ Nessuna installazione locale complessa
+- ✅ Compatibile con Python 3.13+
+- ✅ Crediti gratuiti iniziali ($5)
+
+#### Modalità 2: Incolla Testo (Gratuita)
 - Incolla una lista di studenti in formato testo
 - Formati supportati:
   - `Cognome Nome, DD/MM/YYYY`

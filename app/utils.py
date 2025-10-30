@@ -1,116 +1,136 @@
-"""Helper per l'elaborazione di screenshot e estrazione dati studenti"""
+"""Helper per l'elaborazione di screenshot e estrazione dati studenti usando Claude AI Vision"""
 
 import re
+import os
+import base64
 from datetime import datetime
 from typing import List, Dict, Optional
-import pytesseract
-from PIL import Image
 
 class StudentExtractor:
-    """Estrae dati degli studenti da uno screenshot"""
+    """Estrae dati degli studenti da uno screenshot usando Claude AI Vision"""
 
     @staticmethod
-    def extract_from_image(image_path: str) -> List[Dict]:
+    def extract_from_image(image_path: str, api_key: Optional[str] = None) -> List[Dict]:
         """
-        Estrae dati degli studenti da un'immagine usando OCR
+        Estrae dati degli studenti da un'immagine usando Claude AI Vision
 
         Args:
             image_path: Path all'immagine da processare
+            api_key: Chiave API di Anthropic (opzionale, può essere in env var)
 
         Returns:
             Lista di dizionari con i dati degli studenti
         """
         try:
-            # Carica l'immagine
-            image = Image.open(image_path)
+            import anthropic
 
-            # Estrai il testo usando OCR
-            text = pytesseract.image_to_string(image, lang='ita')
+            # Ottieni API key
+            if not api_key:
+                api_key = os.environ.get('ANTHROPIC_API_KEY')
 
-            # Parsa il testo per estrarre i dati
-            students = StudentExtractor._parse_text(text)
+            if not api_key:
+                raise ValueError("API key di Anthropic non fornita. Configura la chiave API nelle impostazioni.")
 
-            return students
-        except Exception as e:
-            print(f"Errore nell'estrazione: {str(e)}")
-            return []
+            # Leggi l'immagine e convertila in base64
+            with open(image_path, 'rb') as image_file:
+                image_data = base64.standard_b64encode(image_file.read()).decode('utf-8')
 
-    @staticmethod
-    def _parse_text(text: str) -> List[Dict]:
-        """
-        Parsa il testo estratto per trovare i dati degli studenti
+            # Determina il tipo di immagine
+            extension = image_path.lower().split('.')[-1]
+            media_type_map = {
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'png': 'image/png',
+                'gif': 'image/gif',
+                'webp': 'image/webp'
+            }
+            media_type = media_type_map.get(extension, 'image/jpeg')
 
-        Formati supportati:
-        - "Cognome Nome, Data di nascita"
-        - "Cognome Nome - DD/MM/YYYY"
-        - "Nome Cognome (DD/MM/YYYY)"
-        - Righe con nome, cognome e data
-        """
-        students = []
-        lines = text.strip().split('\n')
+            # Crea client Anthropic
+            client = anthropic.Anthropic(api_key=api_key)
 
-        for line in lines:
-            line = line.strip()
-            if not line or len(line) < 5:
-                continue
+            # Prompt per Claude
+            prompt = """Analizza questa immagine che contiene una lista di studenti.
 
-            student_data = StudentExtractor._extract_student_from_line(line)
-            if student_data:
-                students.append(student_data)
+Estrai i seguenti dati per ogni studente:
+- Nome
+- Cognome
+- Data di nascita (formato DD/MM/YYYY)
+- Email (se presente)
+- Telefono (se presente)
 
-        return students
+Rispondi SOLO con un JSON array nel formato:
+[
+  {
+    "nome": "Mario",
+    "cognome": "Rossi",
+    "data_nascita": "15/03/2007",
+    "email": "mario.rossi@example.com",
+    "telefono": "3331234567"
+  }
+]
 
-    @staticmethod
-    def _extract_student_from_line(line: str) -> Optional[Dict]:
-        """Estrae i dati di uno studente da una riga di testo"""
+Se un campo non è presente, omettilo dal JSON.
+Rispondi SOLO con il JSON, nessun altro testo."""
 
-        # Pattern per date: DD/MM/YYYY o DD-MM-YYYY
-        date_pattern = r'(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})'
-        date_match = re.search(date_pattern, line)
+            # Chiamata all'API di Claude
+            message = client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=4096,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": media_type,
+                                    "data": image_data,
+                                },
+                            },
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ],
+                    }
+                ],
+            )
 
-        data_nascita = None
-        if date_match:
-            date_str = date_match.group(1)
-            data_nascita = StudentExtractor._parse_date(date_str)
-            # Rimuovi la data dalla riga per facilitare l'estrazione del nome
-            line = line.replace(date_match.group(0), '').strip()
+            # Estrai il testo dalla risposta
+            response_text = message.content[0].text
 
-        # Rimuovi caratteri speciali comuni
-        line = re.sub(r'[,\(\)\-\:]', ' ', line)
-        line = ' '.join(line.split())  # Normalizza spazi
+            # Cerca il JSON nella risposta
+            import json
 
-        # Dividi in parole
-        parts = line.split()
-
-        if len(parts) < 2:
-            return None
-
-        # Assumi che il primo elemento sia il cognome e il secondo il nome
-        # oppure il contrario
-        # Prova a identificare quale è quale (i cognomi tendono ad essere in maiuscolo)
-
-        if len(parts) == 2:
-            # Caso semplice: due parole
-            if parts[0].isupper() or parts[0][0].isupper():
-                cognome = parts[0].title()
-                nome = parts[1].title()
+            # Prova a estrarre solo il JSON se c'è altro testo
+            json_match = re.search(r'\[[\s\S]*\]', response_text)
+            if json_match:
+                json_str = json_match.group(0)
             else:
-                nome = parts[0].title()
-                cognome = parts[1].title()
-        else:
-            # Più di due parole: prendi le prime due
-            cognome = parts[0].title()
-            nome = parts[1].title()
+                json_str = response_text
 
-        return {
-            'nome': nome,
-            'cognome': cognome,
-            'data_nascita': data_nascita
-        }
+            # Parse del JSON
+            students_data = json.loads(json_str)
+
+            # Converti le date nel formato corretto
+            for student in students_data:
+                if 'data_nascita' in student and student['data_nascita']:
+                    student['data_nascita'] = StudentExtractor._parse_date(student['data_nascita'])
+
+            return students_data
+
+        except Exception as e:
+            print(f"Errore nell'estrazione con Claude Vision: {str(e)}")
+            raise
 
     @staticmethod
     def _parse_date(date_str: str) -> Optional[str]:
         """Converte una stringa data in formato YYYY-MM-DD"""
+        if not date_str:
+            return None
+
         # Sostituisci - con /
         date_str = date_str.replace('-', '/')
 
@@ -120,10 +140,19 @@ class StudentExtractor:
             return date_obj.strftime('%Y-%m-%d')
         except ValueError:
             try:
-                # Prova formato D/M/YYYY
-                date_obj = datetime.strptime(date_str, '%d/%m/%Y')
+                # Prova formato YYYY/MM/DD
+                date_obj = datetime.strptime(date_str, '%Y/%m/%d')
                 return date_obj.strftime('%Y-%m-%d')
             except ValueError:
+                try:
+                    # Prova formato D/M/YYYY (senza zero padding)
+                    parts = date_str.split('/')
+                    if len(parts) == 3:
+                        day, month, year = parts
+                        date_obj = datetime(int(year), int(month), int(day))
+                        return date_obj.strftime('%Y-%m-%d')
+                except:
+                    return None
                 return None
 
     @staticmethod

@@ -23,11 +23,36 @@
         <!-- Screenshot Upload Tab -->
         <div id="screenshot-tab" class="tab-content active">
             <div class="upload-section">
-                <h3>Carica uno Screenshot</h3>
+                <h3>Carica uno Screenshot con Claude AI Vision 🤖</h3>
                 <p class="help-text">
                     Carica un'immagine contenente la lista degli studenti.
-                    Il sistema estrarrà automaticamente i dati usando OCR.
+                    <strong>Claude AI Vision</strong> analizzerà l'immagine ed estrarrà automaticamente i dati.
                 </p>
+
+                <!-- API Key Configuration -->
+                <div class="api-key-section">
+                    <label for="api-key-input">
+                        <strong>Chiave API Anthropic:</strong>
+                        <a href="https://console.anthropic.com/settings/keys" target="_blank" class="help-link">
+                            (Ottieni la tua chiave API)
+                        </a>
+                    </label>
+                    <div class="api-key-input-group">
+                        <input
+                            type="password"
+                            id="api-key-input"
+                            placeholder="sk-ant-api03-..."
+                            class="api-key-field"
+                        >
+                        <button type="button" class="btn-icon" onclick="toggleApiKeyVisibility()" title="Mostra/Nascondi">
+                            👁️
+                        </button>
+                    </div>
+                    <p class="small-text">
+                        La tua chiave API è sicura e viene usata solo per questa richiesta.
+                        Puoi anche configurarla come variabile d'ambiente ANTHROPIC_API_KEY.
+                    </p>
+                </div>
 
                 <div class="upload-area" id="upload-area">
                     <input type="file" id="screenshot-input" accept="image/*" onchange="handleFileSelect(event)" style="display: none;">
@@ -141,6 +166,71 @@ Verdi Giuseppe, 08/01/2007, giuseppe.verdi@example.com, 3331234567"></textarea>
 
 .tab-btn:hover {
     background: var(--light-bg);
+}
+
+.tab-content {
+    display: none;
+}
+
+/* API Key Section */
+.api-key-section {
+    background: #f0f9ff;
+    border: 2px solid #bae6fd;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.api-key-section label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.help-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.help-link:hover {
+    text-decoration: underline;
+}
+
+.api-key-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.api-key-field {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    font-family: monospace;
+}
+
+.api-key-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-icon {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+
+.btn-icon:hover {
+    background: var(--light-bg);
+    border-color: var(--primary-color);
 }
 
 .tab-content {

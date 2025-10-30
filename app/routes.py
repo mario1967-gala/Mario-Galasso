@@ -100,7 +100,7 @@ def import_studenti():
 
 @app.route('/api/studenti/upload-screenshot', methods=['POST'])
 def upload_screenshot():
-    """API per caricare e processare uno screenshot"""
+    """API per caricare e processare uno screenshot usando Claude AI Vision"""
     if 'screenshot' not in request.files:
         return jsonify({'success': False, 'error': 'Nessun file caricato'}), 400
 
@@ -110,11 +110,20 @@ def upload_screenshot():
         return jsonify({'success': False, 'error': 'Nessun file selezionato'}), 400
 
     # Verifica che sia un'immagine
-    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
     if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
         return jsonify({'success': False, 'error': 'Formato file non supportato'}), 400
 
     try:
+        # Ottieni API key dal form data o dalla variabile d'ambiente
+        api_key = request.form.get('api_key') or os.environ.get('ANTHROPIC_API_KEY')
+
+        if not api_key:
+            return jsonify({
+                'success': False,
+                'error': 'Chiave API di Anthropic non fornita. Inserisci la chiave API o configurala come variabile d\'ambiente ANTHROPIC_API_KEY.'
+            }), 400
+
         # Salva il file temporaneamente
         filename = secure_filename(file.filename)
         upload_folder = app.config.get('UPLOAD_FOLDER')
@@ -125,15 +134,20 @@ def upload_screenshot():
 
         file.save(temp_path)
 
-        # Estrai i dati dall'immagine
+        # Estrai i dati dall'immagine usando Claude AI Vision
         try:
-            students_data = StudentExtractor.extract_from_image(temp_path)
-        except Exception as e:
-            # Se OCR fallisce, ritorna un messaggio utile
+            students_data = StudentExtractor.extract_from_image(temp_path, api_key=api_key)
+        except ValueError as e:
+            # Errore di configurazione API key
             return jsonify({
                 'success': False,
-                'error': 'Impossibile estrarre i dati dall\'immagine. Assicurati che tesseract-ocr sia installato o usa l\'import da testo.',
-                'ocr_error': str(e)
+                'error': str(e)
+            }), 400
+        except Exception as e:
+            # Altri errori
+            return jsonify({
+                'success': False,
+                'error': f'Errore nell\'analisi dell\'immagine con Claude AI: {str(e)}'
             }), 500
 
         # Rimuovi il file temporaneo
@@ -145,7 +159,8 @@ def upload_screenshot():
         return jsonify({
             'success': True,
             'students': students_data,
-            'count': len(students_data)
+            'count': len(students_data),
+            'message': f'Claude AI ha estratto {len(students_data)} studenti dall\'immagine'
         })
 
     except Exception as e:

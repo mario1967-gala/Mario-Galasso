@@ -18,14 +18,17 @@ git checkout claude/high-school-class-management-011CUZ8aJ7hnNBgABX1RahdM
 ───────────────────────────────────────────────────────────────────
 
 pip3 install -r requirements.txt
-python3 seed_data.py
-python3 run.py
+mkdir -p instance
+python3 -c "from app import create_app; app = create_app(); app.run(debug=True, host='0.0.0.0', port=5001)"
 
 ───────────────────────────────────────────────────────────────────
   STEP 3: APRI BROWSER
 ───────────────────────────────────────────────────────────────────
 
-http://localhost:5000
+http://localhost:5001
+
+📷 NUOVO: Import Studenti con Claude AI Vision!
+Vedi CLAUDE_VISION_SETUP.md per istruzioni
 
 ═══════════════════════════════════════════════════════════════════
 

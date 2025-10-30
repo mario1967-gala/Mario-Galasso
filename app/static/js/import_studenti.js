@@ -74,18 +74,37 @@ uploadArea.addEventListener('drop', (e) => {
     }
 });
 
-// Upload screenshot e estrai dati
+// Toggle visibilità API key
+function toggleApiKeyVisibility() {
+    const apiKeyInput = document.getElementById('api-key-input');
+    if (apiKeyInput.type === 'password') {
+        apiKeyInput.type = 'text';
+    } else {
+        apiKeyInput.type = 'password';
+    }
+}
+
+// Upload screenshot e estrai dati con Claude AI Vision
 async function uploadScreenshot() {
     if (!selectedFile) {
         showNotification('Seleziona prima un\'immagine', 'error');
         return;
     }
 
+    // Ottieni API key
+    const apiKey = document.getElementById('api-key-input').value.trim();
+
+    if (!apiKey) {
+        showNotification('Inserisci la chiave API di Anthropic per usare Claude AI Vision', 'error');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('screenshot', selectedFile);
+    formData.append('api_key', apiKey);
 
     try {
-        showNotification('Analisi immagine in corso...', 'info');
+        showNotification('🤖 Claude AI sta analizzando l\'immagine...', 'info');
 
         const response = await fetch('/api/studenti/upload-screenshot', {
             method: 'POST',
@@ -97,7 +116,7 @@ async function uploadScreenshot() {
         if (result.success) {
             extractedStudents = result.students;
             displayExtractedStudents(extractedStudents);
-            showNotification(`Estratti ${result.count} studenti dall'immagine`, 'success');
+            showNotification(result.message || `Estratti ${result.count} studenti dall'immagine`, 'success');
         } else {
             if (result.ocr_error) {
                 // Se l'errore è dovuto all'OCR mancante, mostra un messaggio specifico
