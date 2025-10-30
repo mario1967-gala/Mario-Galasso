@@ -1,6 +1,7 @@
 from flask import current_app as app, render_template, request, jsonify, send_from_directory
 from app import db
 from app.models import Studente, Materia, Voto, Presenza, Compito, Materiale
+from app.utils import StudentExtractor
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
@@ -89,6 +90,134 @@ def delete_studente(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== IMPORT DA SCREENSHOT ====================
+
+@app.route('/studenti/import')
+def import_studenti():
+    """Pagina per import studenti da screenshot"""
+    return render_template('import_studenti.html')
+
+@app.route('/api/studenti/upload-screenshot', methods=['POST'])
+def upload_screenshot():
+    """API per caricare e processare uno screenshot"""
+    if 'screenshot' not in request.files:
+        return jsonify({'success': False, 'error': 'Nessun file caricato'}), 400
+
+    file = request.files['screenshot']
+
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'Nessun file selezionato'}), 400
+
+    # Verifica che sia un'immagine
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
+    if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+        return jsonify({'success': False, 'error': 'Formato file non supportato'}), 400
+
+    try:
+        # Salva il file temporaneamente
+        filename = secure_filename(file.filename)
+        upload_folder = app.config.get('UPLOAD_FOLDER')
+        temp_path = os.path.join(upload_folder, f'temp_{filename}')
+
+        # Assicurati che la cartella esista
+        os.makedirs(upload_folder, exist_ok=True)
+
+        file.save(temp_path)
+
+        # Estrai i dati dall'immagine
+        try:
+            students_data = StudentExtractor.extract_from_image(temp_path)
+        except Exception as e:
+            # Se OCR fallisce, ritorna un messaggio utile
+            return jsonify({
+                'success': False,
+                'error': 'Impossibile estrarre i dati dall\'immagine. Assicurati che tesseract-ocr sia installato o usa l\'import da testo.',
+                'ocr_error': str(e)
+            }), 500
+
+        # Rimuovi il file temporaneo
+        try:
+            os.remove(temp_path)
+        except:
+            pass
+
+        return jsonify({
+            'success': True,
+            'students': students_data,
+            'count': len(students_data)
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/studenti/parse-text', methods=['POST'])
+def parse_text():
+    """API per estrarre studenti da testo strutturato"""
+    data = request.get_json()
+
+    if 'text' not in data:
+        return jsonify({'success': False, 'error': 'Nessun testo fornito'}), 400
+
+    try:
+        students_data = StudentExtractor.extract_from_structured_text(data['text'])
+
+        return jsonify({
+            'success': True,
+            'students': students_data,
+            'count': len(students_data)
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/studenti/batch-import', methods=['POST'])
+def batch_import_studenti():
+    """API per importare multipli studenti in una volta"""
+    data = request.get_json()
+
+    if 'students' not in data or not isinstance(data['students'], list):
+        return jsonify({'success': False, 'error': 'Dati non validi'}), 400
+
+    try:
+        imported_count = 0
+        errors = []
+
+        for student_data in data['students']:
+            try:
+                # Valida i dati obbligatori
+                if not student_data.get('nome') or not student_data.get('cognome'):
+                    errors.append(f"Studente saltato: nome e cognome obbligatori")
+                    continue
+
+                # Crea lo studente
+                studente = Studente(
+                    nome=student_data['nome'],
+                    cognome=student_data['cognome'],
+                    data_nascita=datetime.strptime(student_data['data_nascita'], '%Y-%m-%d').date() if student_data.get('data_nascita') else None,
+                    codice_fiscale=student_data.get('codice_fiscale'),
+                    email=student_data.get('email'),
+                    telefono=student_data.get('telefono'),
+                    indirizzo=student_data.get('indirizzo')
+                )
+
+                db.session.add(studente)
+                imported_count += 1
+
+            except Exception as e:
+                errors.append(f"Errore con {student_data.get('cognome', 'studente')}: {str(e)}")
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'imported': imported_count,
+            'errors': errors
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ==================== MATERIE ====================
 

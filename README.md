@@ -7,6 +7,7 @@ Applicazione web completa per la gestione della didattica di una classe terza de
 ### Funzionalità Principali
 
 - **Gestione Studenti**: Anagrafica completa degli studenti della classe
+- **Import Studenti**: 📷 Importazione rapida da screenshot o testo (NUOVO!)
 - **Gestione Materie**: Database delle materie del liceo scientifico con docenti e ore settimanali
 - **Registro Voti**: Sistema completo per la registrazione e consultazione dei voti
 - **Registro Presenze**: Tracciamento di presenze, assenze, ritardi e uscite anticipate
@@ -124,6 +125,39 @@ La dashboard mostra una panoramica generale con:
 - Modifica dati anagrafici
 - Visualizza elenco completo degli studenti
 - Elimina studenti (con rimozione di tutti i dati associati)
+
+### Import Studenti da Screenshot 📷 (NUOVO!)
+
+Importa rapidamente multipli studenti in due modalità:
+
+#### Modalità 1: Upload Screenshot
+- Carica un'immagine/screenshot con la lista studenti
+- Il sistema estrae automaticamente i dati usando OCR
+- Verifica e modifica i dati estratti
+- Importa con un click
+
+**Requisiti**: Tesseract OCR (opzionale)
+- Ubuntu/Debian: `sudo apt-get install tesseract-ocr tesseract-ocr-ita`
+- macOS: `brew install tesseract tesseract-lang`
+
+#### Modalità 2: Incolla Testo
+- Incolla una lista di studenti in formato testo
+- Formati supportati:
+  - `Cognome Nome, DD/MM/YYYY`
+  - `Cognome Nome, DD/MM/YYYY, email@example.com`
+  - `Cognome Nome, DD/MM/YYYY, email@example.com, telefono`
+- Estrazione immediata senza dipendenze esterne
+
+**Esempio:**
+```
+Rossi Mario, 15/03/2007, mario.rossi@example.com
+Bianchi Laura, 22/05/2007, laura.bianchi@example.com, 3331234567
+Verdi Giuseppe, 08/01/2007
+```
+
+**Accesso**: Pagina Studenti → Pulsante "📷 Import da Screenshot"
+
+Per maggiori dettagli vedi [IMPORT_STUDENTI.md](IMPORT_STUDENTI.md)
 
 ### Gestione Materie
 
