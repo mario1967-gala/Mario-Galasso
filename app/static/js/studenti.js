@@ -1,6 +1,7 @@
 // Gestione studenti
 
 let studenti = [];
+let classi = [];
 
 // Carica tutti gli studenti
 async function loadStudenti() {
@@ -13,17 +14,28 @@ async function loadStudenti() {
     }
 }
 
+// Carica tutte le classi
+async function loadClassi() {
+    try {
+        const response = await fetch('/api/classi');
+        classi = await response.json();
+    } catch (error) {
+        console.error('Errore nel caricamento delle classi:', error);
+    }
+}
+
 // Renderizza la tabella degli studenti
 function renderStudenti() {
     const tbody = document.getElementById('studenti-tbody');
 
     if (studenti.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Nessuno studente trovato</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Nessuno studente trovato</td></tr>';
         return;
     }
 
     tbody.innerHTML = studenti.map(studente => `
         <tr>
+            <td>${studente.classe_nome || '-'}</td>
             <td>${studente.cognome}</td>
             <td>${studente.nome}</td>
             <td>${formatDate(studente.data_nascita)}</td>
@@ -43,7 +55,21 @@ function showAddStudentModal() {
     document.getElementById('modalTitle').textContent = 'Aggiungi Studente';
     document.getElementById('studentForm').reset();
     document.getElementById('studentId').value = '';
+    populateClassiSelect();
     document.getElementById('studentModal').classList.add('show');
+}
+
+// Popola il select delle classi
+function populateClassiSelect() {
+    const select = document.getElementById('classe_id');
+    select.innerHTML = '<option value="">Seleziona classe...</option>';
+
+    classi.forEach(classe => {
+        const option = document.createElement('option');
+        option.value = classe.id;
+        option.textContent = classe.nome;
+        select.appendChild(option);
+    });
 }
 
 // Modifica studente
@@ -53,6 +79,8 @@ function editStudente(id) {
 
     document.getElementById('modalTitle').textContent = 'Modifica Studente';
     document.getElementById('studentId').value = studente.id;
+    populateClassiSelect();
+    document.getElementById('classe_id').value = studente.classe_id || '';
     document.getElementById('nome').value = studente.nome;
     document.getElementById('cognome').value = studente.cognome;
     document.getElementById('data_nascita').value = studente.data_nascita;
@@ -68,7 +96,10 @@ async function saveStudent(event) {
     event.preventDefault();
 
     const id = document.getElementById('studentId').value;
+    const classeId = document.getElementById('classe_id').value;
+
     const data = {
+        classe_id: classeId || null,
         nome: document.getElementById('nome').value,
         cognome: document.getElementById('cognome').value,
         data_nascita: document.getElementById('data_nascita').value,
@@ -128,5 +159,5 @@ function closeModal() {
     document.getElementById('studentModal').classList.remove('show');
 }
 
-// Carica studenti all'avvio
-loadStudenti();
+// Carica studenti e classi all'avvio
+Promise.all([loadClassi(), loadStudenti()]);

@@ -1,118 +1,97 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Classi - Didattica</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <nav>
-        <div class="container">
-            <h1>Gestione Didattica</h1>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/classi" class="active">Classi</a></li>
-                <li><a href="/studenti">Studenti</a></li>
-                <li><a href="/materie">Materie</a></li>
-                <li><a href="/voti">Voti</a></li>
-                <li><a href="/presenze">Presenze</a></li>
-                <li><a href="/compiti">Compiti</a></li>
-                <li><a href="/materiali">Materiali</a></li>
-            </ul>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
-    <div class="container">
-        <div class="header-section">
-            <h2>Gestione Classi</h2>
-            <button onclick="openModal()" class="btn btn-primary">
-                Aggiungi Classe
-            </button>
-        </div>
+{% block title %}Gestione Classi{% endblock %}
 
-        <div class="classi-grid" id="classi-container">
-            <!-- Le classi verranno caricate qui -->
-        </div>
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Gestione Classi</h2>
+        <button onclick="openModal()" class="btn btn-primary">
+            + Aggiungi Classe
+        </button>
     </div>
 
-    <!-- Modal per aggiungere/modificare classe -->
-    <div id="classeModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="modalTitle">Aggiungi Classe</h3>
+    <div class="classi-grid" id="classi-container">
+        <!-- Le classi verranno caricate qui -->
+    </div>
+</div>
 
-            <form id="classeForm">
-                <input type="hidden" id="classe-id">
+<!-- Modal per aggiungere/modificare classe -->
+<div id="classeModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Aggiungi Classe</h3>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="anno">Anno *</label>
-                        <select id="anno" required>
-                            <option value="">Seleziona...</option>
-                            <option value="1">Primo</option>
-                            <option value="2">Secondo</option>
-                            <option value="3">Terzo</option>
-                            <option value="4">Quarto</option>
-                            <option value="5">Quinto</option>
-                        </select>
-                    </div>
+        <form id="classeForm">
+            <input type="hidden" id="classe-id">
 
-                    <div class="form-group">
-                        <label for="sezione">Sezione *</label>
-                        <input type="text" id="sezione" maxlength="10" placeholder="A, B, C..." required>
-                    </div>
-                </div>
-
+            <div class="form-row">
                 <div class="form-group">
-                    <label for="indirizzo">Indirizzo</label>
-                    <select id="indirizzo">
-                        <option value="Scientifico">Scientifico</option>
-                        <option value="Scientifico - Scienze Applicate">Scientifico - Scienze Applicate</option>
-                        <option value="Classico">Classico</option>
-                        <option value="Linguistico">Linguistico</option>
-                        <option value="Artistico">Artistico</option>
-                        <option value="Musicale">Musicale</option>
-                        <option value="Altro">Altro</option>
+                    <label for="anno">Anno *</label>
+                    <select id="anno" required>
+                        <option value="">Seleziona...</option>
+                        <option value="1">Primo</option>
+                        <option value="2">Secondo</option>
+                        <option value="3">Terzo</option>
+                        <option value="4">Quarto</option>
+                        <option value="5">Quinto</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="nome">Nome Classe *</label>
-                    <input type="text" id="nome" placeholder="Es: 3A Scientifico" required>
-                    <small>Verrà generato automaticamente da Anno + Sezione + Indirizzo</small>
+                    <label for="sezione">Sezione *</label>
+                    <input type="text" id="sezione" maxlength="10" placeholder="A, B, C..." required>
                 </div>
-
-                <div class="form-group">
-                    <label for="anno-scolastico">Anno Scolastico *</label>
-                    <input type="text" id="anno-scolastico" placeholder="Es: 2024/2025" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="note">Note</label>
-                    <textarea id="note" rows="3"></textarea>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" onclick="closeModal()" class="btn btn-secondary">Annulla</button>
-                    <button type="submit" class="btn btn-primary">Salva</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal per visualizzare studenti della classe -->
-    <div id="studentiModal" class="modal">
-        <div class="modal-content modal-large">
-            <span class="close" onclick="closeStudentiModal()">&times;</span>
-            <h3 id="studentiModalTitle">Studenti della Classe</h3>
-
-            <div id="studenti-list">
-                <!-- Lista studenti verrà caricata qui -->
             </div>
+
+            <div class="form-group">
+                <label for="indirizzo">Indirizzo</label>
+                <select id="indirizzo">
+                    <option value="Scientifico">Scientifico</option>
+                    <option value="Scientifico - Scienze Applicate">Scientifico - Scienze Applicate</option>
+                    <option value="Classico">Classico</option>
+                    <option value="Linguistico">Linguistico</option>
+                    <option value="Artistico">Artistico</option>
+                    <option value="Musicale">Musicale</option>
+                    <option value="Altro">Altro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nome">Nome Classe *</label>
+                <input type="text" id="nome" placeholder="Es: 3A Scientifico" required>
+                <small>Verrà generato automaticamente da Anno + Sezione + Indirizzo</small>
+            </div>
+
+            <div class="form-group">
+                <label for="anno-scolastico">Anno Scolastico *</label>
+                <input type="text" id="anno-scolastico" placeholder="Es: 2024/2025" required>
+            </div>
+
+            <div class="form-group">
+                <label for="note">Note</label>
+                <textarea id="note" rows="3"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal per visualizzare studenti della classe -->
+<div id="studentiModal" class="modal">
+    <div class="modal-content modal-large">
+        <span class="close" onclick="closeStudentiModal()">&times;</span>
+        <h3 id="studentiModalTitle">Studenti della Classe</h3>
+
+        <div id="studenti-list">
+            <!-- Lista studenti verrà caricata qui -->
         </div>
     </div>
+</div>
 
-    <script src="{{ url_for('static', filename='js/classi.js') }}"></script>
-</body>
-</html>
+<script src="{{ url_for('static', filename='js/classi.js') }}"></script>
+{% endblock %}

@@ -38,6 +38,7 @@ def create_studente():
 
     try:
         studente = Studente(
+            classe_id=data.get('classe_id'),
             nome=data['nome'],
             cognome=data['cognome'],
             data_nascita=datetime.strptime(data['data_nascita'], '%Y-%m-%d').date(),
@@ -62,6 +63,8 @@ def update_studente(id):
     data = request.get_json()
 
     try:
+        if 'classe_id' in data:
+            studente.classe_id = data.get('classe_id') or None
         studente.nome = data.get('nome', studente.nome)
         studente.cognome = data.get('cognome', studente.cognome)
         if 'data_nascita' in data:
