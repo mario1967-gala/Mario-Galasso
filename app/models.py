@@ -1,11 +1,43 @@
 from datetime import datetime
 from app import db
 
+class Classe(db.Model):
+    """Modello per le classi del liceo"""
+    __tablename__ = 'classi'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False, unique=True)  # es: "3A Scientifico"
+    anno = db.Column(db.Integer, nullable=False)  # es: 3
+    sezione = db.Column(db.String(10), nullable=False)  # es: "A"
+    indirizzo = db.Column(db.String(100))  # es: "Scientifico"
+    anno_scolastico = db.Column(db.String(20), nullable=False)  # es: "2024/2025"
+    note = db.Column(db.Text)
+
+    # Relazioni
+    studenti = db.relationship('Studente', backref='classe', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Classe {self.nome}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'anno': self.anno,
+            'sezione': self.sezione,
+            'indirizzo': self.indirizzo,
+            'anno_scolastico': self.anno_scolastico,
+            'note': self.note,
+            'num_studenti': len(self.studenti)
+        }
+
+
 class Studente(db.Model):
     """Modello per gli studenti della classe"""
     __tablename__ = 'studenti'
 
     id = db.Column(db.Integer, primary_key=True)
+    classe_id = db.Column(db.Integer, db.ForeignKey('classi.id'), nullable=True)
     nome = db.Column(db.String(100), nullable=False)
     cognome = db.Column(db.String(100), nullable=False)
     data_nascita = db.Column(db.Date, nullable=True)
@@ -25,6 +57,8 @@ class Studente(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'classe_id': self.classe_id,
+            'classe_nome': self.classe.nome if self.classe else None,
             'nome': self.nome,
             'cognome': self.cognome,
             'data_nascita': self.data_nascita.strftime('%Y-%m-%d') if self.data_nascita else None,

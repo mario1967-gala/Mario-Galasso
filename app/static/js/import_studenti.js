@@ -3,6 +3,35 @@
 let extractedStudents = [];
 let selectedFile = null;
 
+// Carica le classi disponibili
+async function loadClassi() {
+    try {
+        const response = await fetch('/api/classi');
+        if (!response.ok) throw new Error('Errore nel caricamento delle classi');
+
+        const classi = await response.json();
+        const selectElement = document.getElementById('classe-select');
+
+        // Mantieni l'opzione "Nessuna classe"
+        selectElement.innerHTML = '<option value="">Nessuna classe</option>';
+
+        // Aggiungi le classi disponibili
+        classi.forEach(classe => {
+            const option = document.createElement('option');
+            option.value = classe.id;
+            option.textContent = `${classe.nome} (${classe.num_studenti} studenti)`;
+            selectElement.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Errore caricamento classi:', error);
+    }
+}
+
+// Carica le classi al caricamento della pagina
+document.addEventListener('DOMContentLoaded', () => {
+    loadClassi();
+});
+
 // Switch tra le tab
 function switchTab(tabName) {
     // Nascondi tutte le tab
@@ -259,12 +288,21 @@ async function importSelectedStudents() {
     }
 
     try {
+        // Ottieni la classe selezionata (se presente)
+        const classeId = document.getElementById('classe-select').value;
+        const payload = { students: selectedStudents };
+
+        // Aggiungi classe_id se selezionata
+        if (classeId) {
+            payload.classe_id = parseInt(classeId);
+        }
+
         const response = await fetch('/api/studenti/batch-import', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ students: selectedStudents })
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();

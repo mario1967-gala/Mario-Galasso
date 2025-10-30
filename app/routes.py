@@ -1,6 +1,6 @@
 from flask import current_app as app, render_template, request, jsonify, send_from_directory
 from app import db
-from app.models import Studente, Materia, Voto, Presenza, Compito, Materiale
+from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale
 from app.utils import StudentExtractor
 from datetime import datetime
 import os
@@ -198,6 +198,9 @@ def batch_import_studenti():
         imported_count = 0
         errors = []
 
+        # Classe_id predefinita per tutti gli studenti (opzionale)
+        default_classe_id = data.get('classe_id')
+
         for student_data in data['students']:
             try:
                 # Valida i dati obbligatori
@@ -205,8 +208,12 @@ def batch_import_studenti():
                     errors.append(f"Studente saltato: nome e cognome obbligatori")
                     continue
 
+                # Usa classe_id specifico dello studente, altrimenti usa quello predefinito
+                classe_id = student_data.get('classe_id', default_classe_id)
+
                 # Crea lo studente
                 studente = Studente(
+                    classe_id=classe_id,
                     nome=student_data['nome'],
                     cognome=student_data['cognome'],
                     data_nascita=datetime.strptime(student_data['data_nascita'], '%Y-%m-%d').date() if student_data.get('data_nascita') else None,
@@ -233,6 +240,92 @@ def batch_import_studenti():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# ==================== CLASSI ====================
+
+@app.route('/classi')
+def classi():
+    """Pagina gestione classi"""
+    return render_template('classi.html')
+
+@app.route('/api/classi', methods=['GET'])
+def get_classi():
+    """API per ottenere tutte le classi"""
+    classi_list = Classe.query.order_by(Classe.anno, Classe.sezione).all()
+    return jsonify([classe.to_dict() for classe in classi_list])
+
+@app.route('/api/classi/<int:classe_id>', methods=['GET'])
+def get_classe(classe_id):
+    """API per ottenere una classe specifica"""
+    classe = Classe.query.get_or_404(classe_id)
+    return jsonify(classe.to_dict())
+
+@app.route('/api/classi', methods=['POST'])
+def create_classe():
+    """API per creare una nuova classe"""
+    data = request.get_json()
+
+    try:
+        classe = Classe(
+            nome=data['nome'],
+            anno=data['anno'],
+            sezione=data['sezione'],
+            indirizzo=data.get('indirizzo'),
+            anno_scolastico=data['anno_scolastico'],
+            note=data.get('note')
+        )
+
+        db.session.add(classe)
+        db.session.commit()
+
+        return jsonify(classe.to_dict()), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/classi/<int:classe_id>', methods=['PUT'])
+def update_classe(classe_id):
+    """API per aggiornare una classe"""
+    classe = Classe.query.get_or_404(classe_id)
+    data = request.get_json()
+
+    try:
+        classe.nome = data.get('nome', classe.nome)
+        classe.anno = data.get('anno', classe.anno)
+        classe.sezione = data.get('sezione', classe.sezione)
+        classe.indirizzo = data.get('indirizzo', classe.indirizzo)
+        classe.anno_scolastico = data.get('anno_scolastico', classe.anno_scolastico)
+        classe.note = data.get('note', classe.note)
+
+        db.session.commit()
+
+        return jsonify(classe.to_dict())
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/classi/<int:classe_id>', methods=['DELETE'])
+def delete_classe(classe_id):
+    """API per eliminare una classe"""
+    classe = Classe.query.get_or_404(classe_id)
+
+    try:
+        db.session.delete(classe)
+        db.session.commit()
+        return jsonify({'message': 'Classe eliminata con successo'})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/classi/<int:classe_id>/studenti', methods=['GET'])
+def get_studenti_classe(classe_id):
+    """API per ottenere tutti gli studenti di una classe"""
+    classe = Classe.query.get_or_404(classe_id)
+    studenti = Studente.query.filter_by(classe_id=classe_id).order_by(Studente.cognome, Studente.nome).all()
+    return jsonify([studente.to_dict() for studente in studenti])
 
 # ==================== MATERIE ====================
 

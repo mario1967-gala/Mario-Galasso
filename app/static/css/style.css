@@ -509,6 +509,108 @@ form {
     color: var(--text-light);
 }
 
+/* Classi Grid */
+.classi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.classe-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.classe-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.classe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.classe-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+.classe-header .badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.classe-info {
+    margin-bottom: 1rem;
+}
+
+.classe-info p {
+    margin: 0.5rem 0;
+    color: var(--text-color);
+}
+
+.classe-info .note {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--background-color);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
+.classe-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.classe-actions .btn {
+    flex: 1;
+}
+
+/* Modal Large */
+.modal-large {
+    max-width: 800px;
+}
+
+/* Studenti Table */
+.studenti-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.studenti-table th,
+.studenti-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.studenti-table th {
+    background: var(--background-color);
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.studenti-table tbody tr:hover {
+    background: var(--background-color);
+}
+
 /* Animations */
 @keyframes fadeIn {
     from { opacity: 0; }

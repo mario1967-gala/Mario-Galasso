@@ -54,6 +54,20 @@
                     </p>
                 </div>
 
+                <div class="classe-selection-section">
+                    <label for="classe-select">
+                        <strong>Assegna a Classe (opzionale):</strong>
+                    </label>
+                    <select id="classe-select" class="classe-select-field">
+                        <option value="">Nessuna classe</option>
+                        <!-- Le classi verranno caricate dinamicamente -->
+                    </select>
+                    <p class="small-text">
+                        Seleziona una classe per assegnare automaticamente tutti gli studenti importati.
+                        <a href="/classi" target="_blank">Gestisci classi</a>
+                    </p>
+                </div>
+
                 <div class="upload-area" id="upload-area">
                     <input type="file" id="screenshot-input" accept="image/*" onchange="handleFileSelect(event)" style="display: none;">
                     <div class="upload-prompt" onclick="document.getElementById('screenshot-input').click()">
@@ -231,6 +245,35 @@ Verdi Giuseppe, 08/01/2007, giuseppe.verdi@example.com, 3331234567"></textarea>
 .btn-icon:hover {
     background: var(--light-bg);
     border-color: var(--primary-color);
+}
+
+.classe-selection-section {
+    background: #f0fdf4;
+    border: 2px solid #bbf7d0;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.classe-selection-section label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.classe-select-field {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.classe-select-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .tab-content {
