@@ -91,7 +91,7 @@ Rispondi SOLO con il JSON array, nessun altro testo."""
 
             # Chiamata all'API di Claude
             message = client.messages.create(
-                model="claude-3-sonnet-20240229",
+                model="claude-3-haiku-20240307",
                 max_tokens=4096,
                 messages=[
                     {
