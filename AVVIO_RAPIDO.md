@@ -80,13 +80,13 @@ python run.py
 
 Una volta avviata, apri il browser e vai su:
 ```
-http://localhost:5000
+http://localhost:5001
 ```
 
 o
 
 ```
-http://127.0.0.1:5000
+http://127.0.0.1:5001
 ```
 
 ## 📁 Struttura File (Cosa Dovresti Vedere)
@@ -182,12 +182,12 @@ pip install -r requirements.txt
 pip3 install -r requirements.txt
 ```
 
-### "Porta 5000 già in uso"
+### "Porta 5001 già in uso"
 
 Modifica la porta in `run.py`:
 ```python
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)  # Cambia 5000 in 5001
+    app.run(debug=True, host='0.0.0.0', port=5002)  # Cambia 5001 in 5002 se necessario
 ```
 
 ## 🎯 Test Veloce
@@ -228,7 +228,7 @@ python3 test_import.py
 - [ ] Dipendenze installate (`pip install -r requirements.txt`)
 - [ ] Database popolato (opzionale: `python seed_data.py`)
 - [ ] Server avviato (`python run.py`)
-- [ ] Browser aperto su `http://localhost:5000`
+- [ ] Browser aperto su `http://localhost:5001`
 - [ ] Dashboard visibile
 
 ## 📱 Accesso alle Funzionalità
