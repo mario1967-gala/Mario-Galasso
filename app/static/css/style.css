@@ -650,7 +650,336 @@ form {
 
     .cards-grid,
     .compiti-grid,
-    .materiali-grid {
+    .materiali-grid,
+    .verifiche-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* ==================== VERIFICHE STYLES ==================== */
+
+.verifiche-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.verifica-card {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--primary-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.verifica-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.verifica-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.verifica-card h3 {
+    font-size: 1.25rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    flex: 1;
+}
+
+.verifica-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.verifica-stats .stat {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.badge-ai {
+    background-color: #8b5cf6;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Modal Large */
+.modal-large {
+    width: 90%;
+    max-width: 1000px;
+}
+
+.modal-section {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.modal-section h4 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+/* Domande Container */
+.domande-container {
+    margin-top: 1rem;
+}
+
+.domanda-item {
+    background: var(--light-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.domanda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.domanda-header h5 {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.btn-icon {
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.btn-icon.btn-danger:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.flex-grow {
+    flex: 1;
+}
+
+/* Criteri Section */
+.criteri-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+}
+
+.criteri-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.criteri-header label {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.criteri-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.criterio-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.criterio-descrizione {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.criterio-punteggio {
+    width: 80px;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.empty-state-sm {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    font-style: italic;
+    margin: 0;
+}
+
+.btn-xs {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+}
+
+/* Header Actions */
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Verifica View Content */
+.verifica-view-content {
+    padding: 1rem 0;
+}
+
+.verifica-details {
+    background: white;
+}
+
+.verifica-meta {
+    background: var(--light-bg);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.verifica-meta p {
+    margin-bottom: 0.5rem;
+}
+
+.domande-view {
+    margin-top: 2rem;
+}
+
+.domande-view h4 {
+    margin-bottom: 1.5rem;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.domanda-view-item {
+    background: var(--light-bg);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.domanda-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.domanda-view-header strong {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.domanda-view-testo {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 1rem 0;
+    color: var(--text-dark);
+}
+
+.domanda-view-opzioni,
+.domanda-view-risposta {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin: 0.5rem 0;
+}
+
+.criteri-view {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+
+.criteri-view strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.criteri-view ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.criteri-view li {
+    padding: 0.5rem;
+    border-left: 3px solid var(--success-color);
+    margin-bottom: 0.5rem;
+    background: var(--light-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge-sm {
+    background: var(--success-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.domanda-view-note {
+    background: #fef3c7;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    border-left: 3px solid var(--warning-color);
+}
+
+.domanda-view-spazio {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-top: 0.5rem;
+}
+
+/* Alert Info */
+.alert-info {
+    background: #dbeafe;
+    border-left: 4px solid #3b82f6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+.alert-info strong {
+    color: #1e40af;
 }
