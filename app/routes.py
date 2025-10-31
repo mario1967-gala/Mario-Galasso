@@ -1074,3 +1074,151 @@ def delete_domanda(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== VERIFICHE ====================
+
+@app.route('/verifiche')
+def verifiche():
+    """Pagina gestione verifiche"""
+    return render_template('verifiche.html')
+
+@app.route('/api/verifiche', methods=['GET'])
+def get_verifiche():
+    """API per ottenere tutte le verifiche"""
+    try:
+        verifiche = Verifica.query.order_by(Verifica.data_creazione.desc()).all()
+        result = []
+
+        for v in verifiche:
+            verifica_dict = v.to_dict()
+            # Conta domande
+            verifica_dict['num_domande'] = len(v.domande_associazione)
+            # Calcola punteggio totale
+            verifica_dict['punteggio_totale'] = sum([dv.punteggio for dv in v.domande_associazione])
+            result.append(verifica_dict)
+
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/verifiche/<int:id>', methods=['GET'])
+def get_verifica(id):
+    """API per ottenere una singola verifica con le sue domande"""
+    verifica = Verifica.query.get_or_404(id)
+
+    verifica_dict = verifica.to_dict()
+
+    # Aggiungi domande con ordine e punteggio
+    domande = []
+    for dv in sorted(verifica.domande_associazione, key=lambda x: x.ordine):
+        domanda_dict = dv.domanda.to_dict()
+        domanda_dict['ordine'] = dv.ordine
+        domanda_dict['punteggio'] = dv.punteggio
+        domande.append(domanda_dict)
+
+    verifica_dict['domande'] = domande
+    verifica_dict['punteggio_totale'] = sum([d['punteggio'] for d in domande])
+
+    return jsonify(verifica_dict)
+
+@app.route('/api/verifiche', methods=['POST'])
+def create_verifica():
+    """API per creare una nuova verifica"""
+    data = request.get_json()
+
+    try:
+        # Crea verifica
+        verifica = Verifica(
+            classe_id=data['classe_id'],
+            materia_id=data['materia_id'],
+            titolo=data['titolo'],
+            argomento=data.get('argomento'),
+            data_somministrazione=datetime.strptime(data['data_somministrazione'], '%Y-%m-%d').date() if data.get('data_somministrazione') else None,
+            durata_minuti=data.get('durata_minuti'),
+            num_versioni=data.get('num_versioni', 1),
+            mescola_domande=data.get('mescola_domande', False),
+            istruzioni=data.get('istruzioni'),
+            stato=data.get('stato', 'bozza')
+        )
+
+        db.session.add(verifica)
+        db.session.flush()  # Per ottenere l'ID
+
+        # Aggiungi domande
+        domande_data = data.get('domande', [])
+        for d in domande_data:
+            domanda_verifica = DomandaVerifica(
+                verifica_id=verifica.id,
+                domanda_id=d['domanda_id'],
+                ordine=d['ordine'],
+                punteggio=d['punteggio']
+            )
+            db.session.add(domanda_verifica)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'verifica': verifica.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/verifiche/<int:id>', methods=['PUT'])
+def update_verifica(id):
+    """API per aggiornare una verifica"""
+    verifica = Verifica.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        # Aggiorna campi base
+        verifica.classe_id = data.get('classe_id', verifica.classe_id)
+        verifica.materia_id = data.get('materia_id', verifica.materia_id)
+        verifica.titolo = data.get('titolo', verifica.titolo)
+        verifica.argomento = data.get('argomento', verifica.argomento)
+
+        if data.get('data_somministrazione'):
+            verifica.data_somministrazione = datetime.strptime(data['data_somministrazione'], '%Y-%m-%d').date()
+        else:
+            verifica.data_somministrazione = None
+
+        verifica.durata_minuti = data.get('durata_minuti', verifica.durata_minuti)
+        verifica.num_versioni = data.get('num_versioni', verifica.num_versioni)
+        verifica.mescola_domande = data.get('mescola_domande', verifica.mescola_domande)
+        verifica.istruzioni = data.get('istruzioni', verifica.istruzioni)
+        verifica.stato = data.get('stato', verifica.stato)
+
+        # Aggiorna domande se presenti
+        if 'domande' in data:
+            # Rimuovi tutte le associazioni esistenti
+            DomandaVerifica.query.filter_by(verifica_id=verifica.id).delete()
+
+            # Aggiungi nuove associazioni
+            domande_data = data['domande']
+            for d in domande_data:
+                domanda_verifica = DomandaVerifica(
+                    verifica_id=verifica.id,
+                    domanda_id=d['domanda_id'],
+                    ordine=d['ordine'],
+                    punteggio=d['punteggio']
+                )
+                db.session.add(domanda_verifica)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'verifica': verifica.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/verifiche/<int:id>', methods=['DELETE'])
+def delete_verifica(id):
+    """API per eliminare una verifica"""
+    verifica = Verifica.query.get_or_404(id)
+
+    try:
+        # Le associazioni DomandaVerifica saranno eliminate automaticamente (cascade)
+        db.session.delete(verifica)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
