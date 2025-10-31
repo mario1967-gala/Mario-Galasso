@@ -80,7 +80,7 @@ python3 run.py
  * Serving Flask app 'app'
  * Debug mode: on
 WARNING: This is a development server. Do not use it in a production deployment.
- * Running on http://0.0.0.0:5000
+ * Running on http://0.0.0.0:5001
 Press CTRL+C to quit
 ```
 
@@ -89,7 +89,7 @@ Press CTRL+C to quit
 ### 5️⃣ Aprire l'Applicazione nel Browser
 
 1. Apri il tuo browser (Chrome, Firefox, Safari, etc.)
-2. Vai all'indirizzo: **http://localhost:5000**
+2. Vai all'indirizzo: **http://localhost:5001**
 3. Nella barra di navigazione in alto dovresti vedere:
 
 ```
@@ -143,7 +143,7 @@ Dashboard | Studenti | Materie | Voti | Presenze | Compiti | Verifiche | Materia
 - [ ] Dipendenze installate (`pip3 install -r requirements.txt`)
 - [ ] Database inizializzato (`python3 init_db.py`)
 - [ ] Applicazione avviata (`python3 run.py`)
-- [ ] Browser aperto su `http://localhost:5000`
+- [ ] Browser aperto su `http://localhost:5001`
 - [ ] Link "Verifiche" visibile nella navbar
 - [ ] Pagina verifiche si carica correttamente
 
