@@ -43,12 +43,25 @@ async function loadStudenti() {
         updateStudenteFilter();
 
         // Popola il select del form
-        const studenteSelect = document.getElementById('studente_id');
-        studenteSelect.innerHTML = '<option value="">Seleziona studente</option>' +
-            studenti.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}</option>`).join('');
+        populateFormStudentiSelect();
     } catch (error) {
         handleApiError(error);
     }
+}
+
+// Popola il select studenti del form filtrando per classe se necessario
+function populateFormStudentiSelect() {
+    const filterClasse = document.getElementById('filterClasse').value;
+    const studenteSelect = document.getElementById('studente_id');
+
+    // Filtra studenti in base alla classe selezionata nei filtri
+    let studentiFiltrati = studenti;
+    if (filterClasse) {
+        studentiFiltrati = studenti.filter(s => s.classe_id == filterClasse);
+    }
+
+    studenteSelect.innerHTML = '<option value="">Seleziona studente</option>' +
+        studentiFiltrati.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}</option>`).join('');
 }
 
 // Aggiorna il filtro studenti in base alla classe selezionata
@@ -138,6 +151,10 @@ function showAddPresenzaModal() {
     document.getElementById('presenzaId').value = '';
     document.getElementById('data').valueAsDate = new Date();
     toggleTimeFields();
+
+    // Ripopola il select studenti con il filtro classe corrente
+    populateFormStudentiSelect();
+
     document.getElementById('presenzaModal').classList.add('show');
 }
 

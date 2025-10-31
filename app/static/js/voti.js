@@ -113,13 +113,27 @@ function updateVotiCount() {
 
 // Popola i select del form
 function populateFormSelects() {
-    const studenteSelect = document.getElementById('studente_id');
-    studenteSelect.innerHTML = '<option value="">Seleziona studente</option>' +
-        studenti.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}</option>`).join('');
+    // Popola studenti considerando il filtro classe
+    populateFormStudentiSelect();
 
     const materiaSelect = document.getElementById('materia_id');
     materiaSelect.innerHTML = '<option value="">Seleziona materia</option>' +
         materie.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+}
+
+// Popola il select studenti del form filtrando per classe se necessario
+function populateFormStudentiSelect() {
+    const filterClasse = document.getElementById('filterClasse').value;
+    const studenteSelect = document.getElementById('studente_id');
+
+    // Filtra studenti in base alla classe selezionata nei filtri
+    let studentiFiltrati = studenti;
+    if (filterClasse) {
+        studentiFiltrati = studenti.filter(s => s.classe_id == filterClasse);
+    }
+
+    studenteSelect.innerHTML = '<option value="">Seleziona studente</option>' +
+        studentiFiltrati.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}</option>`).join('');
 }
 
 // Renderizza la tabella dei voti
@@ -153,6 +167,10 @@ function showAddVotoModal() {
     document.getElementById('votoForm').reset();
     document.getElementById('votoId').value = '';
     document.getElementById('data').valueAsDate = new Date();
+
+    // Ripopola il select studenti con il filtro classe corrente
+    populateFormStudentiSelect();
+
     document.getElementById('votoModal').classList.add('show');
 }
 
