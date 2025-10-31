@@ -12,6 +12,18 @@
         </div>
     </div>
 
+    <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+        <div class="form-group" style="margin: 0; flex: 0 0 300px;">
+            <label for="filtro-classe" style="margin-bottom: 0.5rem; display: block;">Filtra per Classe:</label>
+            <select id="filtro-classe" onchange="filterByClasse()" style="width: 100%;">
+                <option value="">Tutte le classi</option>
+            </select>
+        </div>
+        <div id="studenti-count" style="color: #666; font-size: 0.95rem;">
+            <!-- Il contatore verrà aggiornato qui -->
+        </div>
+    </div>
+
     <div class="table-container">
         <table class="data-table">
             <thead>

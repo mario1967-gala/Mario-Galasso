@@ -2,6 +2,7 @@
 
 let studenti = [];
 let classi = [];
+let currentFilter = ''; // Filtro corrente per classe
 
 // Carica tutti gli studenti
 async function loadStudenti() {
@@ -19,21 +20,62 @@ async function loadClassi() {
     try {
         const response = await fetch('/api/classi');
         classi = await response.json();
+        populateFiltroClassi();
     } catch (error) {
         console.error('Errore nel caricamento delle classi:', error);
     }
+}
+
+// Popola il dropdown del filtro classi
+function populateFiltroClassi() {
+    const select = document.getElementById('filtro-classe');
+    if (!select) return;
+
+    // Mantieni l'opzione "Tutte le classi"
+    select.innerHTML = '<option value="">Tutte le classi</option>';
+
+    classi.forEach(classe => {
+        const option = document.createElement('option');
+        option.value = classe.id;
+        option.textContent = `${classe.nome} (${classe.num_studenti} studenti)`;
+        select.appendChild(option);
+    });
+
+    // Ripristina il filtro corrente se presente
+    if (currentFilter) {
+        select.value = currentFilter;
+    }
+}
+
+// Filtra studenti per classe
+function filterByClasse() {
+    const select = document.getElementById('filtro-classe');
+    currentFilter = select.value;
+    renderStudenti();
 }
 
 // Renderizza la tabella degli studenti
 function renderStudenti() {
     const tbody = document.getElementById('studenti-tbody');
 
-    if (studenti.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Nessuno studente trovato</td></tr>';
+    // Filtra studenti in base alla classe selezionata
+    let studentiFiltrati = studenti;
+    if (currentFilter) {
+        studentiFiltrati = studenti.filter(s => s.classe_id == currentFilter);
+    }
+
+    // Aggiorna il contatore
+    updateStudentiCount(studentiFiltrati.length, studenti.length);
+
+    if (studentiFiltrati.length === 0) {
+        const messaggio = currentFilter
+            ? 'Nessuno studente trovato in questa classe'
+            : 'Nessuno studente trovato';
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center">${messaggio}</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = studenti.map(studente => `
+    tbody.innerHTML = studentiFiltrati.map(studente => `
         <tr>
             <td>${studente.classe_nome || '-'}</td>
             <td>${studente.cognome}</td>
@@ -48,6 +90,20 @@ function renderStudenti() {
             </td>
         </tr>
     `).join('');
+}
+
+// Aggiorna il contatore degli studenti visualizzati
+function updateStudentiCount(filtered, total) {
+    const countDiv = document.getElementById('studenti-count');
+    if (!countDiv) return;
+
+    if (currentFilter) {
+        const classeSelezionata = classi.find(c => c.id == currentFilter);
+        const nomeClasse = classeSelezionata ? classeSelezionata.nome : 'classe selezionata';
+        countDiv.innerHTML = `<strong>${filtered}</strong> studenti in <strong>${nomeClasse}</strong> (${total} totali)`;
+    } else {
+        countDiv.innerHTML = `<strong>${total}</strong> studenti totali`;
+    }
 }
 
 // Mostra modal per aggiungere studente
@@ -124,7 +180,8 @@ async function saveStudent(event) {
         if (result.success) {
             showNotification(id ? 'Studente aggiornato con successo' : 'Studente creato con successo');
             closeModal();
-            loadStudenti();
+            // Ricarica sia studenti che classi per aggiornare i contatori
+            Promise.all([loadClassi(), loadStudenti()]);
         } else {
             showNotification('Errore: ' + result.error, 'error');
         }
@@ -145,7 +202,8 @@ async function deleteStudente(id) {
 
         if (result.success) {
             showNotification('Studente eliminato con successo');
-            loadStudenti();
+            // Ricarica sia studenti che classi per aggiornare i contatori
+            Promise.all([loadClassi(), loadStudenti()]);
         } else {
             showNotification('Errore: ' + result.error, 'error');
         }
