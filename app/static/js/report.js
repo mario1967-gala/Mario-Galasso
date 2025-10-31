@@ -26,22 +26,41 @@ async function loadData() {
 // Popola i select
 function populateSelects() {
     // Popola select classi
-    const classeSelects = ['classe-voti', 'classe-presenze', 'classe-stats'];
+    const classeSelects = ['classe-voti', 'classe-presenze', 'classe-stats', 'classe-pagella'];
     classeSelects.forEach(selectId => {
         const select = document.getElementById(selectId);
-        select.innerHTML = '<option value="">Seleziona classe...</option>' +
-            classi.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+        if (selectId === 'classe-pagella') {
+            select.innerHTML = '<option value="">Tutte le classi</option>' +
+                classi.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+        } else {
+            select.innerHTML = '<option value="">Seleziona classe...</option>' +
+                classi.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+        }
     });
 
-    // Popola select studenti
-    const studenteSelect = document.getElementById('studente-pagella');
-    studenteSelect.innerHTML = '<option value="">Seleziona studente...</option>' +
-        studenti.map(s => `<option value="${s.id}">${s.cognome} ${s.nome} - ${s.classe_nome || 'Nessuna classe'}</option>`).join('');
+    // Popola select studenti (inizialmente tutti)
+    updateStudentiPagella();
 
     // Popola select materie
     const materiaSelect = document.getElementById('materia-voti');
     materiaSelect.innerHTML = '<option value="">Tutte le materie</option>' +
         materie.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+}
+
+// Aggiorna il select studenti in base al filtro classe
+function updateStudentiPagella() {
+    const classeId = document.getElementById('classe-pagella').value;
+    const studenteSelect = document.getElementById('studente-pagella');
+
+    // Filtra studenti in base alla classe selezionata
+    let studentiFiltrati = studenti;
+    if (classeId) {
+        studentiFiltrati = studenti.filter(s => s.classe_id == classeId);
+    }
+
+    // Popola il select con gli studenti filtrati
+    studenteSelect.innerHTML = '<option value="">Seleziona studente...</option>' +
+        studentiFiltrati.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}${s.classe_nome ? ' - ' + s.classe_nome : ''}</option>`).join('');
 }
 
 // Genera report voti

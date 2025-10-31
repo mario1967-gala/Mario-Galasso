@@ -66,6 +66,13 @@
             <p>Genera la pagella completa di uno studente con medie per materia.</p>
 
             <div class="form-group">
+                <label for="classe-pagella">Filtra per Classe</label>
+                <select id="classe-pagella" onchange="updateStudentiPagella()">
+                    <option value="">Tutte le classi</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="studente-pagella">Seleziona Studente *</label>
                 <select id="studente-pagella">
                     <option value="">Seleziona studente...</option>
