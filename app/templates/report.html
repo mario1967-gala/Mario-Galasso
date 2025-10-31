@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Genera Report{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Genera Report PDF</h2>
+    </div>
+
+    <div class="report-grid">
+        <!-- Report Registro Voti per Classe -->
+        <div class="report-card">
+            <h3>📊 Registro Voti per Classe</h3>
+            <p>Genera un report completo con tutti i voti degli studenti di una classe specifica.</p>
+
+            <div class="form-group">
+                <label for="classe-voti">Seleziona Classe *</label>
+                <select id="classe-voti">
+                    <option value="">Seleziona classe...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="materia-voti">Materia (opzionale)</label>
+                <select id="materia-voti">
+                    <option value="">Tutte le materie</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateReportVoti()">
+                📥 Scarica Report Voti
+            </button>
+        </div>
+
+        <!-- Report Presenze per Classe -->
+        <div class="report-card">
+            <h3>📅 Registro Presenze per Classe</h3>
+            <p>Genera un report con tutte le presenze/assenze degli studenti di una classe.</p>
+
+            <div class="form-group">
+                <label for="classe-presenze">Seleziona Classe *</label>
+                <select id="classe-presenze">
+                    <option value="">Seleziona classe...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="data-inizio">Data Inizio</label>
+                <input type="date" id="data-inizio">
+            </div>
+
+            <div class="form-group">
+                <label for="data-fine">Data Fine</label>
+                <input type="date" id="data-fine">
+            </div>
+
+            <button class="btn btn-primary" onclick="generateReportPresenze()">
+                📥 Scarica Report Presenze
+            </button>
+        </div>
+
+        <!-- Report Pagella Studente -->
+        <div class="report-card">
+            <h3>🎓 Pagella Studente</h3>
+            <p>Genera la pagella completa di uno studente con medie per materia.</p>
+
+            <div class="form-group">
+                <label for="studente-pagella">Seleziona Studente *</label>
+                <select id="studente-pagella">
+                    <option value="">Seleziona studente...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="periodo">Periodo</label>
+                <select id="periodo">
+                    <option value="annuale">Anno Scolastico</option>
+                    <option value="primo">Primo Quadrimestre</option>
+                    <option value="secondo">Secondo Quadrimestre</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateReportPagella()">
+                📥 Scarica Pagella
+            </button>
+        </div>
+
+        <!-- Report Statistiche Classe -->
+        <div class="report-card">
+            <h3>📈 Statistiche Classe</h3>
+            <p>Report statistico completo con medie, grafici e analisi per classe.</p>
+
+            <div class="form-group">
+                <label for="classe-stats">Seleziona Classe *</label>
+                <select id="classe-stats">
+                    <option value="">Seleziona classe...</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateReportStats()">
+                📥 Scarica Statistiche
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.report-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--primary-color);
+}
+
+.report-card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+.report-card p {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.report-card .form-group {
+    margin-bottom: 1rem;
+}
+
+.report-card .btn {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}

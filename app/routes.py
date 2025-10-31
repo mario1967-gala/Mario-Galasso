@@ -1,8 +1,10 @@
-from flask import current_app as app, render_template, request, jsonify, send_from_directory
+from flask import current_app as app, render_template, request, jsonify, send_from_directory, send_file
 from app import db
 from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale
 from app.utils import StudentExtractor
+from app.report_generator import ReportGenerator
 from datetime import datetime
+from collections import defaultdict
 import os
 from werkzeug.utils import secure_filename
 
@@ -734,3 +736,256 @@ def get_statistiche():
         return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+# ==================== REPORT ====================
+
+@app.route('/report')
+def report():
+    """Pagina generazione report"""
+    return render_template('report.html')
+
+@app.route('/api/report/voti/<int:classe_id>')
+def generate_report_voti(classe_id):
+    """API per generare report voti in PDF"""
+    try:
+        classe = Classe.query.get_or_404(classe_id)
+        materia_id = request.args.get('materia_id')
+
+        # Query voti
+        query = db.session.query(
+            Studente.nome,
+            Studente.cognome,
+            Materia.nome.label('materia_nome'),
+            Voto.voto,
+            Voto.tipo,
+            Voto.data,
+            Voto.note
+        ).join(
+            Voto, Studente.id == Voto.studente_id
+        ).join(
+            Materia, Voto.materia_id == Materia.id
+        ).filter(
+            Studente.classe_id == classe_id
+        )
+
+        if materia_id:
+            query = query.filter(Materia.id == materia_id)
+
+        voti = query.order_by(Studente.cognome, Studente.nome, Voto.data).all()
+
+        # Converti in dict
+        voti_list = []
+        for v in voti:
+            voti_list.append({
+                'nome': v.nome,
+                'cognome': v.cognome,
+                'materia_nome': v.materia_nome,
+                'voto': v.voto,
+                'tipo': v.tipo,
+                'data': v.data.strftime('%Y-%m-%d'),
+                'note': v.note
+            })
+
+        # Genera PDF
+        generator = ReportGenerator()
+        materia_obj = Materia.query.get(materia_id) if materia_id else None
+        pdf_buffer = generator.generate_report_voti(classe, voti_list, materia_obj)
+
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'report_voti_{classe.nome.replace(" ", "_")}.pdf'
+        )
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/report/presenze/<int:classe_id>')
+def generate_report_presenze(classe_id):
+    """API per generare report presenze in PDF"""
+    try:
+        classe = Classe.query.get_or_404(classe_id)
+        data_inizio_str = request.args.get('data_inizio')
+        data_fine_str = request.args.get('data_fine')
+
+        data_inizio = datetime.strptime(data_inizio_str, '%Y-%m-%d').date() if data_inizio_str else None
+        data_fine = datetime.strptime(data_fine_str, '%Y-%m-%d').date() if data_fine_str else None
+
+        # Query presenze
+        query = db.session.query(
+            Presenza.data,
+            Studente.nome,
+            Studente.cognome,
+            Presenza.tipo,
+            Presenza.ora_ingresso,
+            Presenza.ora_uscita,
+            Presenza.giustificata,
+            Presenza.note
+        ).join(
+            Studente, Presenza.studente_id == Studente.id
+        ).filter(
+            Studente.classe_id == classe_id
+        )
+
+        if data_inizio:
+            query = query.filter(Presenza.data >= data_inizio)
+        if data_fine:
+            query = query.filter(Presenza.data <= data_fine)
+
+        presenze = query.order_by(Presenza.data.desc(), Studente.cognome).all()
+
+        # Converti in dict
+        presenze_list = []
+        for p in presenze:
+            presenze_list.append({
+                'data': p.data.strftime('%Y-%m-%d'),
+                'nome': p.nome,
+                'cognome': p.cognome,
+                'tipo': p.tipo,
+                'ora_ingresso': p.ora_ingresso,
+                'ora_uscita': p.ora_uscita,
+                'giustificata': p.giustificata,
+                'note': p.note
+            })
+
+        # Genera PDF
+        generator = ReportGenerator()
+        pdf_buffer = generator.generate_report_presenze(classe, presenze_list, data_inizio, data_fine)
+
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'report_presenze_{classe.nome.replace(" ", "_")}.pdf'
+        )
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/report/pagella/<int:studente_id>')
+def generate_report_pagella(studente_id):
+    """API per generare pagella studente in PDF"""
+    try:
+        studente = Studente.query.get_or_404(studente_id)
+        periodo = request.args.get('periodo', 'annuale')
+
+        # Query voti per materia
+        voti = db.session.query(
+            Materia.nome.label('materia_nome'),
+            Voto.voto
+        ).join(
+            Materia, Voto.materia_id == Materia.id
+        ).filter(
+            Voto.studente_id == studente_id
+        ).all()
+
+        # Calcola medie per materia
+        voti_per_materia = defaultdict(lambda: {'voti': [], 'media': 0, 'numero_voti': 0})
+
+        for v in voti:
+            voti_per_materia[v.materia_nome]['voti'].append(v.voto)
+
+        # Calcola medie
+        for materia, info in voti_per_materia.items():
+            if info['voti']:
+                info['media'] = sum(info['voti']) / len(info['voti'])
+                info['numero_voti'] = len(info['voti'])
+                del info['voti']  # Rimuovi lista voti, non serve nel PDF
+
+        # Genera PDF
+        generator = ReportGenerator()
+        pdf_buffer = generator.generate_pagella(studente, voti_per_materia, periodo)
+
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'pagella_{studente.cognome}_{studente.nome}.pdf'
+        )
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/report/statistiche/<int:classe_id>')
+def generate_report_statistiche(classe_id):
+    """API per generare report statistiche classe in PDF"""
+    try:
+        classe = Classe.query.get_or_404(classe_id)
+
+        # Conta studenti
+        numero_studenti = Studente.query.filter_by(classe_id=classe_id).count()
+
+        # Media classe
+        media_classe_raw = db.session.query(
+            db.func.avg(Voto.voto)
+        ).join(
+            Studente, Voto.studente_id == Studente.id
+        ).filter(
+            Studente.classe_id == classe_id
+        ).scalar()
+
+        media_classe = float(media_classe_raw) if media_classe_raw else 0.0
+
+        # Totale voti
+        totale_voti = db.session.query(
+            db.func.count(Voto.id)
+        ).join(
+            Studente, Voto.studente_id == Studente.id
+        ).filter(
+            Studente.classe_id == classe_id
+        ).scalar() or 0
+
+        # Totale presenze
+        totale_presenze = db.session.query(
+            db.func.count(Presenza.id)
+        ).join(
+            Studente, Presenza.studente_id == Studente.id
+        ).filter(
+            Studente.classe_id == classe_id
+        ).scalar() or 0
+
+        # Medie per materia
+        medie_materia = db.session.query(
+            Materia.nome.label('materia_nome'),
+            db.func.avg(Voto.voto).label('media'),
+            db.func.count(Voto.id).label('numero_voti')
+        ).join(
+            Voto, Materia.id == Voto.materia_id
+        ).join(
+            Studente, Voto.studente_id == Studente.id
+        ).filter(
+            Studente.classe_id == classe_id
+        ).group_by(
+            Materia.nome
+        ).all()
+
+        medie_per_materia = {}
+        for m in medie_materia:
+            medie_per_materia[m.materia_nome] = {
+                'media': float(m.media),
+                'numero_voti': m.numero_voti
+            }
+
+        # Prepara statistiche
+        statistiche = {
+            'numero_studenti': numero_studenti,
+            'media_classe': media_classe,
+            'totale_voti': totale_voti,
+            'totale_presenze': totale_presenze,
+            'medie_per_materia': medie_per_materia
+        }
+
+        # Genera PDF
+        generator = ReportGenerator()
+        pdf_buffer = generator.generate_statistiche_classe(classe, statistiche)
+
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'statistiche_{classe.nome.replace(" ", "_")}.pdf'
+        )
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
