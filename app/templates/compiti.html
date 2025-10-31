@@ -10,6 +10,9 @@
     </div>
 
     <div class="filters">
+        <select id="filterClasse" onchange="updateCompitiContext()">
+            <option value="">Tutte le classi</option>
+        </select>
         <select id="filterMateria" onchange="loadCompiti()">
             <option value="">Tutte le materie</option>
         </select>
@@ -17,6 +20,10 @@
             <input type="checkbox" id="filterCompletati" onchange="loadCompiti()">
             Mostra completati
         </label>
+    </div>
+
+    <div id="compiti-count" style="margin: 1rem 0; color: #666; font-size: 0.95rem;">
+        <!-- Contatore compiti -->
     </div>
 
     <div class="compiti-grid" id="compiti-grid">

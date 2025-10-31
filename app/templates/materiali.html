@@ -10,6 +10,9 @@
     </div>
 
     <div class="filters">
+        <select id="filterClasse" onchange="updateMaterialiContext()">
+            <option value="">Tutte le classi</option>
+        </select>
         <select id="filterMateria" onchange="loadMateriali()">
             <option value="">Tutte le materie</option>
         </select>
@@ -21,6 +24,10 @@
             <option value="link">Link</option>
             <option value="video">Video</option>
         </select>
+    </div>
+
+    <div id="materiali-count" style="margin: 1rem 0; color: #666; font-size: 0.95rem;">
+        <!-- Contatore materiali -->
     </div>
 
     <div class="materiali-grid" id="materiali-grid">

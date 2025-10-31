@@ -2,6 +2,7 @@
 
 let materiali = [];
 let materie = [];
+let classi = [];
 
 // Carica tutti i materiali
 async function loadMateriali() {
@@ -25,18 +26,29 @@ async function loadMateriali() {
         }
 
         renderMateriali();
+        updateMaterialiCount();
     } catch (error) {
         handleApiError(error);
     }
 }
 
-// Carica materie
+// Carica materie e classi
 async function loadMaterie() {
     try {
-        const response = await fetch('/api/materie');
-        materie = await response.json();
+        const [materieRes, classiRes] = await Promise.all([
+            fetch('/api/materie'),
+            fetch('/api/classi')
+        ]);
 
-        // Popola i filtri
+        materie = await materieRes.json();
+        classi = await classiRes.json();
+
+        // Popola il filtro classi
+        const filterClasse = document.getElementById('filterClasse');
+        filterClasse.innerHTML = '<option value="">Tutte le classi</option>' +
+            classi.map(c => `<option value="${c.id}">${c.nome} (${c.num_studenti} studenti)</option>`).join('');
+
+        // Popola i filtri materie
         const filterMateria = document.getElementById('filterMateria');
         filterMateria.innerHTML = '<option value="">Tutte le materie</option>' +
             materie.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
@@ -48,6 +60,50 @@ async function loadMaterie() {
     } catch (error) {
         handleApiError(error);
     }
+}
+
+// Aggiorna il contesto quando cambia la classe selezionata
+function updateMaterialiContext() {
+    updateMaterialiCount();
+}
+
+// Aggiorna il contatore dei materiali
+function updateMaterialiCount() {
+    const countDiv = document.getElementById('materiali-count');
+    if (!countDiv) return;
+
+    const filterClasse = document.getElementById('filterClasse').value;
+    const filterMateria = document.getElementById('filterMateria').value;
+    const filterTipo = document.getElementById('filterTipo').value;
+
+    let messaggio = `<strong>${materiali.length}</strong> materiali`;
+
+    if (filterClasse) {
+        const classe = classi.find(c => c.id == filterClasse);
+        if (classe) {
+            messaggio += ` - Contesto: <strong>${classe.nome}</strong>`;
+        }
+    }
+
+    if (filterMateria) {
+        const materia = materie.find(m => m.id == filterMateria);
+        if (materia) {
+            messaggio += ` - Materia: <strong>${materia.nome}</strong>`;
+        }
+    }
+
+    if (filterTipo) {
+        const tipiNomi = {
+            'dispensa': 'Dispense',
+            'slide': 'Slide',
+            'esercizi': 'Esercizi',
+            'link': 'Link',
+            'video': 'Video'
+        };
+        messaggio += ` - Tipo: <strong>${tipiNomi[filterTipo] || filterTipo}</strong>`;
+    }
+
+    countDiv.innerHTML = messaggio;
 }
 
 // Ottieni icona per tipo materiale

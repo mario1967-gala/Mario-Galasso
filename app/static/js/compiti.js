@@ -2,6 +2,7 @@
 
 let compiti = [];
 let materie = [];
+let classi = [];
 
 // Carica tutti i compiti
 async function loadCompiti() {
@@ -25,18 +26,29 @@ async function loadCompiti() {
         }
 
         renderCompiti();
+        updateCompitiCount();
     } catch (error) {
         handleApiError(error);
     }
 }
 
-// Carica materie
+// Carica materie e classi
 async function loadMaterie() {
     try {
-        const response = await fetch('/api/materie');
-        materie = await response.json();
+        const [materieRes, classiRes] = await Promise.all([
+            fetch('/api/materie'),
+            fetch('/api/classi')
+        ]);
 
-        // Popola i filtri
+        materie = await materieRes.json();
+        classi = await classiRes.json();
+
+        // Popola il filtro classi
+        const filterClasse = document.getElementById('filterClasse');
+        filterClasse.innerHTML = '<option value="">Tutte le classi</option>' +
+            classi.map(c => `<option value="${c.id}">${c.nome} (${c.num_studenti} studenti)</option>`).join('');
+
+        // Popola i filtri materie
         const filterMateria = document.getElementById('filterMateria');
         filterMateria.innerHTML = '<option value="">Tutte le materie</option>' +
             materie.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
@@ -48,6 +60,43 @@ async function loadMaterie() {
     } catch (error) {
         handleApiError(error);
     }
+}
+
+// Aggiorna il contesto quando cambia la classe selezionata
+function updateCompitiContext() {
+    updateCompitiCount();
+}
+
+// Aggiorna il contatore dei compiti
+function updateCompitiCount() {
+    const countDiv = document.getElementById('compiti-count');
+    if (!countDiv) return;
+
+    const filterClasse = document.getElementById('filterClasse').value;
+    const filterMateria = document.getElementById('filterMateria').value;
+    const showCompletati = document.getElementById('filterCompletati').checked;
+
+    let messaggio = `<strong>${compiti.length}</strong> compiti`;
+
+    if (!showCompletati) {
+        messaggio += ' da completare';
+    }
+
+    if (filterClasse) {
+        const classe = classi.find(c => c.id == filterClasse);
+        if (classe) {
+            messaggio += ` - Contesto: <strong>${classe.nome}</strong>`;
+        }
+    }
+
+    if (filterMateria) {
+        const materia = materie.find(m => m.id == filterMateria);
+        if (materia) {
+            messaggio += ` - Materia: <strong>${materia.nome}</strong>`;
+        }
+    }
+
+    countDiv.innerHTML = messaggio;
 }
 
 // Renderizza i compiti
