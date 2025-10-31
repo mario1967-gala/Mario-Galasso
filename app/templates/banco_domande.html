@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Banco Domande{% endblock %}
+
+{% block extra_css %}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Banco Domande</h2>
+        <button class="btn btn-primary" onclick="showAddDomandaModal()">+ Aggiungi Domanda</button>
+    </div>
+
+    <!-- Filtri -->
+    <div class="filters">
+        <select id="filterMateria" onchange="loadDomande()">
+            <option value="">Tutte le materie</option>
+        </select>
+        <select id="filterArgomento" onchange="loadDomande()">
+            <option value="">Tutti gli argomenti</option>
+        </select>
+        <select id="filterDifficolta" onchange="loadDomande()">
+            <option value="">Tutte le difficoltà</option>
+            <option value="facile">Facile</option>
+            <option value="media">Media</option>
+            <option value="difficile">Difficile</option>
+        </select>
+        <select id="filterTipo" onchange="loadDomande()">
+            <option value="">Tutti i tipi</option>
+            <option value="aperta">Domanda Aperta</option>
+            <option value="multipla">Scelta Multipla</option>
+            <option value="vero_falso">Vero/Falso</option>
+        </select>
+    </div>
+
+    <div id="domande-count" style="margin: 1rem 0; color: #666; font-size: 0.95rem;">
+        <!-- Contatore domande -->
+    </div>
+
+    <!-- Tabella domande -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>Argomento</th>
+                    <th>Testo (anteprima)</th>
+                    <th>Tipo</th>
+                    <th>Difficoltà</th>
+                    <th>Punteggio</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="domande-tbody">
+                <tr>
+                    <td colspan="7" class="text-center">Caricamento...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Aggiungi/Modifica Domanda -->
+<div id="domandaModal" class="modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3 id="modalTitle">Aggiungi Domanda</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <form id="domandaForm" onsubmit="saveDomanda(event)">
+            <input type="hidden" id="domandaId">
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="materia_id">Materia *</label>
+                    <select id="materia_id" required>
+                        <option value="">Seleziona materia</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="flex: 1;">
+                    <label for="argomento">Argomento *</label>
+                    <input type="text" id="argomento" required placeholder="es: Equazioni di secondo grado">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="tipo">Tipo Domanda</label>
+                    <select id="tipo" onchange="toggleOpzioniMultipla()">
+                        <option value="aperta">Domanda Aperta</option>
+                        <option value="multipla">Scelta Multipla</option>
+                        <option value="vero_falso">Vero/Falso</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="flex: 1;">
+                    <label for="difficolta">Difficoltà</label>
+                    <select id="difficolta">
+                        <option value="facile">Facile</option>
+                        <option value="media">Media</option>
+                        <option value="difficile">Difficile</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="flex: 0 0 150px;">
+                    <label for="punteggio_default">Punteggio Default</label>
+                    <input type="number" id="punteggio_default" step="0.25" value="1" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="testo">Testo Domanda (supporta LaTeX: usa $ per inline, $$ per display) *</label>
+                <textarea id="testo" rows="5" required placeholder="Es: Risolvi l'equazione: $x^2 + 5x + 6 = 0$"></textarea>
+                <small>Usa LaTeX per formule: $x^2$ per inline, $$\frac{a}{b}$$ per display</small>
+            </div>
+
+            <div class="form-group">
+                <div style="background: #f5f5f5; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                    <strong>Anteprima Domanda:</strong>
+                    <div id="preview-testo" style="margin-top: 0.5rem; min-height: 40px;">
+                        <!-- Preview renderizzato con MathJax -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opzioni per scelta multipla -->
+            <div id="opzioni-multipla-group" style="display: none;">
+                <div class="form-group">
+                    <label>Opzioni (Scelta Multipla)</label>
+                    <div id="opzioni-container">
+                        <input type="text" id="opzione-a" placeholder="Opzione A">
+                        <input type="text" id="opzione-b" placeholder="Opzione B">
+                        <input type="text" id="opzione-c" placeholder="Opzione C">
+                        <input type="text" id="opzione-d" placeholder="Opzione D">
+                    </div>
+                    <small>La risposta corretta va inserita nel campo "Soluzione"</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="soluzione">Soluzione/Risposta Corretta (supporta LaTeX) *</label>
+                <textarea id="soluzione" rows="4" required placeholder="Es: Le soluzioni sono $x_1 = -2$ e $x_2 = -3$"></textarea>
+            </div>
+
+            <div class="form-group">
+                <div style="background: #f5f5f5; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                    <strong>Anteprima Soluzione:</strong>
+                    <div id="preview-soluzione" style="margin-top: 0.5rem; min-height: 40px;">
+                        <!-- Preview renderizzato con MathJax -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="note">Note (opzionale)</label>
+                <textarea id="note" rows="2" placeholder="Note per uso interno"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva Domanda</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.modal-large {
+    max-width: 900px;
+    width: 90%;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0;
+}
+
+#opzioni-container input {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+#preview-testo, #preview-soluzione {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/banco_domande.js') }}"></script>
+{% endblock %}

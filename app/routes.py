@@ -1,6 +1,6 @@
 from flask import current_app as app, render_template, request, jsonify, send_from_directory, send_file
 from app import db
-from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale
+from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale, Domanda, Verifica, DomandaVerifica, VotoVerifica
 from app.utils import StudentExtractor
 from app.report_generator import ReportGenerator
 from datetime import datetime
@@ -988,4 +988,89 @@ def generate_report_statistiche(classe_id):
         )
 
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== BANCO DOMANDE ====================
+
+@app.route('/banco-domande')
+def banco_domande():
+    """Pagina banco domande"""
+    return render_template('banco_domande.html')
+
+@app.route('/api/domande', methods=['GET'])
+def get_domande():
+    """API per ottenere tutte le domande"""
+    try:
+        domande = Domanda.query.order_by(Domanda.data_creazione.desc()).all()
+        return jsonify([d.to_dict() for d in domande])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/domande/<int:id>', methods=['GET'])
+def get_domanda(id):
+    """API per ottenere una singola domanda"""
+    domanda = Domanda.query.get_or_404(id)
+    return jsonify(domanda.to_dict())
+
+@app.route('/api/domande', methods=['POST'])
+def create_domanda():
+    """API per creare una nuova domanda"""
+    data = request.get_json()
+
+    try:
+        domanda = Domanda(
+            materia_id=data['materia_id'],
+            testo=data['testo'],
+            argomento=data.get('argomento'),
+            difficolta=data.get('difficolta', 'media'),
+            tipo=data.get('tipo', 'aperta'),
+            opzioni_json=data.get('opzioni_json'),
+            soluzione=data.get('soluzione'),
+            punteggio_default=data.get('punteggio_default', 1.0),
+            note=data.get('note')
+        )
+
+        db.session.add(domanda)
+        db.session.commit()
+
+        return jsonify({'success': True, 'domanda': domanda.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/domande/<int:id>', methods=['PUT'])
+def update_domanda(id):
+    """API per aggiornare una domanda"""
+    domanda = Domanda.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        domanda.materia_id = data.get('materia_id', domanda.materia_id)
+        domanda.testo = data.get('testo', domanda.testo)
+        domanda.argomento = data.get('argomento', domanda.argomento)
+        domanda.difficolta = data.get('difficolta', domanda.difficolta)
+        domanda.tipo = data.get('tipo', domanda.tipo)
+        domanda.opzioni_json = data.get('opzioni_json', domanda.opzioni_json)
+        domanda.soluzione = data.get('soluzione', domanda.soluzione)
+        domanda.punteggio_default = data.get('punteggio_default', domanda.punteggio_default)
+        domanda.note = data.get('note', domanda.note)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'domanda': domanda.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/domande/<int:id>', methods=['DELETE'])
+def delete_domanda(id):
+    """API per eliminare una domanda"""
+    domanda = Domanda.query.get_or_404(id)
+
+    try:
+        db.session.delete(domanda)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 400
