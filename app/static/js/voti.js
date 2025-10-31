@@ -2,6 +2,7 @@
 
 let voti = [];
 let studenti = [];
+let classi = [];
 let materie = [];
 
 // Carica tutti i voti
@@ -20,26 +21,32 @@ async function loadVoti() {
         const response = await fetch(url);
         voti = await response.json();
         renderVoti();
+        updateVotiCount();
     } catch (error) {
         handleApiError(error);
     }
 }
 
-// Carica studenti e materie per i filtri e il form
+// Carica studenti, classi e materie per i filtri e il form
 async function loadStudentiMaterie() {
     try {
-        const [studentiRes, materieRes] = await Promise.all([
+        const [studentiRes, classiRes, materieRes] = await Promise.all([
             fetch('/api/studenti'),
+            fetch('/api/classi'),
             fetch('/api/materie')
         ]);
 
         studenti = await studentiRes.json();
+        classi = await classiRes.json();
         materie = await materieRes.json();
 
-        // Popola i filtri
-        const filterStudente = document.getElementById('filterStudente');
-        filterStudente.innerHTML = '<option value="">Tutti gli studenti</option>' +
-            studenti.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}</option>`).join('');
+        // Popola il filtro classi
+        const filterClasse = document.getElementById('filterClasse');
+        filterClasse.innerHTML = '<option value="">Tutte le classi</option>' +
+            classi.map(c => `<option value="${c.id}">${c.nome} (${c.num_studenti} studenti)</option>`).join('');
+
+        // Popola gli altri filtri
+        updateStudenteFilter();
 
         const filterMateria = document.getElementById('filterMateria');
         filterMateria.innerHTML = '<option value="">Tutte le materie</option>' +
@@ -50,6 +57,58 @@ async function loadStudentiMaterie() {
     } catch (error) {
         handleApiError(error);
     }
+}
+
+// Aggiorna il filtro studenti in base alla classe selezionata
+function updateStudenteFilter() {
+    const filterClasse = document.getElementById('filterClasse').value;
+    const filterStudente = document.getElementById('filterStudente');
+
+    let studentiFiltrati = studenti;
+    if (filterClasse) {
+        studentiFiltrati = studenti.filter(s => s.classe_id == filterClasse);
+    }
+
+    filterStudente.innerHTML = '<option value="">Tutti gli studenti</option>' +
+        studentiFiltrati.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}</option>`).join('');
+
+    // Ricarica i voti con il nuovo filtro
+    loadVoti();
+}
+
+// Aggiorna il contatore dei voti
+function updateVotiCount() {
+    const countDiv = document.getElementById('voti-count');
+    if (!countDiv) return;
+
+    const filterClasse = document.getElementById('filterClasse').value;
+    const filterStudente = document.getElementById('filterStudente').value;
+    const filterMateria = document.getElementById('filterMateria').value;
+
+    let messaggio = `<strong>${voti.length}</strong> voti`;
+
+    if (filterClasse) {
+        const classe = classi.find(c => c.id == filterClasse);
+        if (classe) {
+            messaggio += ` - Classe <strong>${classe.nome}</strong>`;
+        }
+    }
+
+    if (filterStudente) {
+        const studente = studenti.find(s => s.id == filterStudente);
+        if (studente) {
+            messaggio += ` - Studente: <strong>${studente.cognome} ${studente.nome}</strong>`;
+        }
+    }
+
+    if (filterMateria) {
+        const materia = materie.find(m => m.id == filterMateria);
+        if (materia) {
+            messaggio += ` - Materia: <strong>${materia.nome}</strong>`;
+        }
+    }
+
+    countDiv.innerHTML = messaggio;
 }
 
 // Popola i select del form

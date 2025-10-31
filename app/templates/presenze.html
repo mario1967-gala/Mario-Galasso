@@ -10,10 +10,17 @@
     </div>
 
     <div class="filters">
+        <select id="filterClasse" onchange="updateStudenteFilter()">
+            <option value="">Tutte le classi</option>
+        </select>
         <select id="filterStudente" onchange="loadPresenze()">
             <option value="">Tutti gli studenti</option>
         </select>
         <input type="date" id="filterData" onchange="loadPresenze()">
+    </div>
+
+    <div id="presenze-count" style="margin: 1rem 0; color: #666; font-size: 0.95rem;">
+        <!-- Contatore presenze -->
     </div>
 
     <div class="table-container">

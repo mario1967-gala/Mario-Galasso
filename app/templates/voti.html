@@ -10,12 +10,19 @@
     </div>
 
     <div class="filters">
+        <select id="filterClasse" onchange="updateStudenteFilter()">
+            <option value="">Tutte le classi</option>
+        </select>
         <select id="filterStudente" onchange="loadVoti()">
             <option value="">Tutti gli studenti</option>
         </select>
         <select id="filterMateria" onchange="loadVoti()">
             <option value="">Tutte le materie</option>
         </select>
+    </div>
+
+    <div id="voti-count" style="margin: 1rem 0; color: #666; font-size: 0.95rem;">
+        <!-- Contatore voti -->
     </div>
 
     <div class="table-container">

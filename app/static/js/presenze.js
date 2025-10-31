@@ -2,6 +2,7 @@
 
 let presenze = [];
 let studenti = [];
+let classi = [];
 
 // Carica tutte le presenze
 async function loadPresenze() {
@@ -16,21 +17,30 @@ async function loadPresenze() {
         const response = await fetch(url);
         presenze = await response.json();
         renderPresenze();
+        updatePresenzeCount();
     } catch (error) {
         handleApiError(error);
     }
 }
 
-// Carica studenti per i filtri
+// Carica studenti e classi per i filtri
 async function loadStudenti() {
     try {
-        const response = await fetch('/api/studenti');
-        studenti = await response.json();
+        const [studentiRes, classiRes] = await Promise.all([
+            fetch('/api/studenti'),
+            fetch('/api/classi')
+        ]);
 
-        // Popola i filtri
-        const filterStudente = document.getElementById('filterStudente');
-        filterStudente.innerHTML = '<option value="">Tutti gli studenti</option>' +
-            studenti.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}</option>`).join('');
+        studenti = await studentiRes.json();
+        classi = await classiRes.json();
+
+        // Popola il filtro classi
+        const filterClasse = document.getElementById('filterClasse');
+        filterClasse.innerHTML = '<option value="">Tutte le classi</option>' +
+            classi.map(c => `<option value="${c.id}">${c.nome} (${c.num_studenti} studenti)</option>`).join('');
+
+        // Popola gli altri filtri
+        updateStudenteFilter();
 
         // Popola il select del form
         const studenteSelect = document.getElementById('studente_id');
@@ -39,6 +49,50 @@ async function loadStudenti() {
     } catch (error) {
         handleApiError(error);
     }
+}
+
+// Aggiorna il filtro studenti in base alla classe selezionata
+function updateStudenteFilter() {
+    const filterClasse = document.getElementById('filterClasse').value;
+    const filterStudente = document.getElementById('filterStudente');
+
+    let studentiFiltrati = studenti;
+    if (filterClasse) {
+        studentiFiltrati = studenti.filter(s => s.classe_id == filterClasse);
+    }
+
+    filterStudente.innerHTML = '<option value="">Tutti gli studenti</option>' +
+        studentiFiltrati.map(s => `<option value="${s.id}">${s.cognome} ${s.nome}</option>`).join('');
+
+    // Ricarica le presenze con il nuovo filtro
+    loadPresenze();
+}
+
+// Aggiorna il contatore delle presenze
+function updatePresenzeCount() {
+    const countDiv = document.getElementById('presenze-count');
+    if (!countDiv) return;
+
+    const filterClasse = document.getElementById('filterClasse').value;
+    const filterStudente = document.getElementById('filterStudente').value;
+
+    let messaggio = `<strong>${presenze.length}</strong> presenze`;
+
+    if (filterClasse) {
+        const classe = classi.find(c => c.id == filterClasse);
+        if (classe) {
+            messaggio += ` - Classe <strong>${classe.nome}</strong>`;
+        }
+    }
+
+    if (filterStudente) {
+        const studente = studenti.find(s => s.id == filterStudente);
+        if (studente) {
+            messaggio += ` - Studente: <strong>${studente.cognome} ${studente.nome}</strong>`;
+        }
+    }
+
+    countDiv.innerHTML = messaggio;
 }
 
 // Renderizza la tabella delle presenze
