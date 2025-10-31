@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Verifiche Scritte{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Verifiche Scritte</h2>
+        <div class="header-actions">
+            <button class="btn btn-success" onclick="showGeneraAIModal()">🤖 Genera con AI</button>
+            <button class="btn btn-primary" onclick="showAddVerificaModal()">+ Nuova Verifica</button>
+        </div>
+    </div>
+
+    <div class="filters">
+        <select id="filterMateria" onchange="loadVerifiche()">
+            <option value="">Tutte le materie</option>
+        </select>
+    </div>
+
+    <div class="verifiche-grid" id="verifiche-grid">
+        <div class="loading">Caricamento...</div>
+    </div>
+</div>
+
+<!-- Modal Aggiungi/Modifica Verifica -->
+<div id="verificaModal" class="modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3 id="modalTitle">Nuova Verifica</h3>
+            <span class="close" onclick="closeVerificaModal()">&times;</span>
+        </div>
+        <form id="verificaForm" onsubmit="saveVerifica(event)">
+            <input type="hidden" id="verificaId">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="materia_id">Materia *</label>
+                    <select id="materia_id" required>
+                        <option value="">Seleziona materia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_verifica">Data Verifica *</label>
+                    <input type="date" id="data_verifica" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="durata_minuti">Durata (minuti)</label>
+                    <input type="number" id="durata_minuti" placeholder="60">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="titolo">Titolo *</label>
+                <input type="text" id="titolo" required placeholder="Es: Verifica di Matematica - Equazioni di secondo grado">
+            </div>
+
+            <div class="form-group">
+                <label for="descrizione">Descrizione</label>
+                <textarea id="descrizione" rows="2" placeholder="Breve descrizione della verifica"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="argomenti">Argomenti</label>
+                <input type="text" id="argomenti" placeholder="Es: Equazioni di secondo grado, discriminante, formula risolutiva">
+            </div>
+
+            <div class="modal-section">
+                <h4>Domande <span id="punteggioTotale" class="badge">Totale: 0 pt</span></h4>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addDomanda()">+ Aggiungi Domanda</button>
+                <div id="domande-container" class="domande-container"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeVerificaModal()">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva Verifica</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Visualizza Verifica -->
+<div id="viewVerificaModal" class="modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3 id="viewModalTitle">Verifica</h3>
+            <span class="close" onclick="closeViewModal()">&times;</span>
+        </div>
+        <div id="viewVerificaContent" class="verifica-view-content">
+            <div class="loading">Caricamento...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeViewModal()">Chiudi</button>
+            <button type="button" class="btn btn-primary" onclick="exportVerificaPDF()">📄 Esporta PDF</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Generatore AI -->
+<div id="generaAIModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🤖 Genera Verifica con Claude AI</h3>
+            <span class="close" onclick="closeGeneraAIModal()">&times;</span>
+        </div>
+        <form id="generaAIForm" onsubmit="generaVerificaAI(event)">
+            <div class="form-group">
+                <label for="ai_materia_id">Materia *</label>
+                <select id="ai_materia_id" required>
+                    <option value="">Seleziona materia</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="ai_argomenti">Argomenti *</label>
+                <input type="text" id="ai_argomenti" required placeholder="Es: Equazioni di secondo grado, parabole, discriminante">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="ai_num_domande">Numero Domande</label>
+                    <input type="number" id="ai_num_domande" value="5" min="1" max="15">
+                </div>
+
+                <div class="form-group">
+                    <label for="ai_punteggio_totale">Punteggio Totale</label>
+                    <input type="number" id="ai_punteggio_totale" value="10" min="1" step="0.5">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="ai_difficolta">Difficoltà</label>
+                    <select id="ai_difficolta">
+                        <option value="bassa">Bassa</option>
+                        <option value="media" selected>Media</option>
+                        <option value="alta">Alta</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ai_tipo_domande">Tipo Domande</label>
+                    <select id="ai_tipo_domande">
+                        <option value="aperta">Solo Aperte</option>
+                        <option value="multipla">Solo Multiple</option>
+                        <option value="misto" selected>Misto</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>Info:</strong> Claude AI genererà la verifica con domande e criteri di valutazione.
+                Potrai rivederla e modificarla prima di salvarla.
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeGeneraAIModal()">Annulla</button>
+                <button type="submit" class="btn btn-success">🤖 Genera Verifica</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/verifiche.js') }}"></script>
+{% endblock %}

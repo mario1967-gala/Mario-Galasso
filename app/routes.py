@@ -1,9 +1,11 @@
 from flask import current_app as app, render_template, request, jsonify, send_from_directory
 from app import db
-from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale
+from app.models import (Classe, Studente, Materia, Voto, Presenza, Compito, Materiale,
+                        Verifica, DomandaVerifica, CriterioValutazione)
 from app.utils import StudentExtractor
 from datetime import datetime
 import os
+import json
 from werkzeug.utils import secure_filename
 
 # Route principale
@@ -731,3 +733,381 @@ def get_statistiche():
         return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+
+# ==================== VERIFICHE ====================
+
+@app.route('/verifiche')
+def verifiche():
+    """Pagina gestione verifiche scritte"""
+    return render_template('verifiche.html')
+
+@app.route('/api/verifiche', methods=['GET'])
+def get_verifiche():
+    """API per ottenere tutte le verifiche"""
+    verifiche = Verifica.query.order_by(Verifica.data_verifica.desc()).all()
+    return jsonify([v.to_dict() for v in verifiche])
+
+@app.route('/api/verifiche/<int:id>', methods=['GET'])
+def get_verifica(id):
+    """API per ottenere una verifica con tutte le domande e criteri"""
+    verifica = Verifica.query.get_or_404(id)
+    return jsonify(verifica.to_dict(include_domande=True))
+
+@app.route('/api/verifiche/materia/<int:materia_id>', methods=['GET'])
+def get_verifiche_materia(materia_id):
+    """API per ottenere le verifiche di una materia"""
+    verifiche = Verifica.query.filter_by(materia_id=materia_id).order_by(Verifica.data_verifica.desc()).all()
+    return jsonify([v.to_dict() for v in verifiche])
+
+@app.route('/api/verifiche', methods=['POST'])
+def create_verifica():
+    """API per creare una nuova verifica con domande e criteri"""
+    data = request.get_json()
+
+    try:
+        # Crea la verifica
+        verifica = Verifica(
+            materia_id=data['materia_id'],
+            titolo=data['titolo'],
+            descrizione=data.get('descrizione'),
+            argomenti=data.get('argomenti'),
+            data_verifica=datetime.strptime(data['data_verifica'], '%Y-%m-%d').date(),
+            durata_minuti=data.get('durata_minuti'),
+            generata_ai=data.get('generata_ai', False)
+        )
+
+        db.session.add(verifica)
+        db.session.flush()  # Per ottenere l'ID della verifica
+
+        # Aggiungi le domande se presenti
+        if 'domande' in data and data['domande']:
+            for idx, domanda_data in enumerate(data['domande'], start=1):
+                domanda = DomandaVerifica(
+                    verifica_id=verifica.id,
+                    numero=domanda_data.get('numero', idx),
+                    testo=domanda_data['testo'],
+                    tipo=domanda_data.get('tipo', 'aperta'),
+                    punteggio=float(domanda_data['punteggio']),
+                    opzioni=domanda_data.get('opzioni'),
+                    risposta_corretta=domanda_data.get('risposta_corretta'),
+                    righe_risposta=domanda_data.get('righe_risposta', 5),
+                    note=domanda_data.get('note')
+                )
+
+                db.session.add(domanda)
+                db.session.flush()  # Per ottenere l'ID della domanda
+
+                # Aggiungi i criteri di valutazione se presenti
+                if 'criteri' in domanda_data and domanda_data['criteri']:
+                    for ordine, criterio_data in enumerate(domanda_data['criteri']):
+                        criterio = CriterioValutazione(
+                            domanda_id=domanda.id,
+                            descrizione=criterio_data['descrizione'],
+                            punteggio=float(criterio_data['punteggio']),
+                            ordine=criterio_data.get('ordine', ordine)
+                        )
+                        db.session.add(criterio)
+
+        # Calcola il punteggio totale
+        verifica.calcola_punteggio_totale()
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'verifica': verifica.to_dict(include_domande=True)}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/verifiche/<int:id>', methods=['PUT'])
+def update_verifica(id):
+    """API per aggiornare una verifica (solo metadati, non domande)"""
+    verifica = Verifica.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        verifica.titolo = data.get('titolo', verifica.titolo)
+        verifica.descrizione = data.get('descrizione', verifica.descrizione)
+        verifica.argomenti = data.get('argomenti', verifica.argomenti)
+
+        if 'data_verifica' in data:
+            verifica.data_verifica = datetime.strptime(data['data_verifica'], '%Y-%m-%d').date()
+
+        verifica.durata_minuti = data.get('durata_minuti', verifica.durata_minuti)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'verifica': verifica.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/verifiche/<int:id>', methods=['DELETE'])
+def delete_verifica(id):
+    """API per eliminare una verifica (cancella anche domande e criteri per cascade)"""
+    verifica = Verifica.query.get_or_404(id)
+
+    try:
+        db.session.delete(verifica)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+
+# ==================== DOMANDE VERIFICA ====================
+
+@app.route('/api/verifiche/<int:verifica_id>/domande', methods=['POST'])
+def create_domanda(verifica_id):
+    """API per aggiungere una domanda a una verifica esistente"""
+    verifica = Verifica.query.get_or_404(verifica_id)
+    data = request.get_json()
+
+    try:
+        # Calcola il numero progressivo
+        max_numero = db.session.query(db.func.max(DomandaVerifica.numero)).filter_by(verifica_id=verifica_id).scalar() or 0
+
+        domanda = DomandaVerifica(
+            verifica_id=verifica_id,
+            numero=data.get('numero', max_numero + 1),
+            testo=data['testo'],
+            tipo=data.get('tipo', 'aperta'),
+            punteggio=float(data['punteggio']),
+            opzioni=data.get('opzioni'),
+            risposta_corretta=data.get('risposta_corretta'),
+            righe_risposta=data.get('righe_risposta', 5),
+            note=data.get('note')
+        )
+
+        db.session.add(domanda)
+        db.session.flush()
+
+        # Aggiungi i criteri se presenti
+        if 'criteri' in data and data['criteri']:
+            for ordine, criterio_data in enumerate(data['criteri']):
+                criterio = CriterioValutazione(
+                    domanda_id=domanda.id,
+                    descrizione=criterio_data['descrizione'],
+                    punteggio=float(criterio_data['punteggio']),
+                    ordine=criterio_data.get('ordine', ordine)
+                )
+                db.session.add(criterio)
+
+        # Ricalcola punteggio totale
+        verifica.calcola_punteggio_totale()
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'domanda': domanda.to_dict(include_criteri=True)}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/domande/<int:id>', methods=['PUT'])
+def update_domanda(id):
+    """API per aggiornare una domanda"""
+    domanda = DomandaVerifica.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        domanda.testo = data.get('testo', domanda.testo)
+        domanda.tipo = data.get('tipo', domanda.tipo)
+        domanda.punteggio = float(data.get('punteggio', domanda.punteggio))
+        domanda.opzioni = data.get('opzioni', domanda.opzioni)
+        domanda.risposta_corretta = data.get('risposta_corretta', domanda.risposta_corretta)
+        domanda.righe_risposta = data.get('righe_risposta', domanda.righe_risposta)
+        domanda.note = data.get('note', domanda.note)
+
+        # Ricalcola punteggio totale della verifica
+        domanda.verifica.calcola_punteggio_totale()
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'domanda': domanda.to_dict(include_criteri=True)})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/domande/<int:id>', methods=['DELETE'])
+def delete_domanda(id):
+    """API per eliminare una domanda"""
+    domanda = DomandaVerifica.query.get_or_404(id)
+    verifica = domanda.verifica
+
+    try:
+        db.session.delete(domanda)
+
+        # Ricalcola punteggio totale
+        verifica.calcola_punteggio_totale()
+
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+
+# ==================== CRITERI VALUTAZIONE ====================
+
+@app.route('/api/domande/<int:domanda_id>/criteri', methods=['POST'])
+def create_criterio(domanda_id):
+    """API per aggiungere un criterio di valutazione a una domanda"""
+    domanda = DomandaVerifica.query.get_or_404(domanda_id)
+    data = request.get_json()
+
+    try:
+        # Calcola l'ordine
+        max_ordine = db.session.query(db.func.max(CriterioValutazione.ordine)).filter_by(domanda_id=domanda_id).scalar() or -1
+
+        criterio = CriterioValutazione(
+            domanda_id=domanda_id,
+            descrizione=data['descrizione'],
+            punteggio=float(data['punteggio']),
+            ordine=data.get('ordine', max_ordine + 1)
+        )
+
+        db.session.add(criterio)
+        db.session.commit()
+
+        return jsonify({'success': True, 'criterio': criterio.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/criteri/<int:id>', methods=['PUT'])
+def update_criterio(id):
+    """API per aggiornare un criterio di valutazione"""
+    criterio = CriterioValutazione.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        criterio.descrizione = data.get('descrizione', criterio.descrizione)
+        criterio.punteggio = float(data.get('punteggio', criterio.punteggio))
+        criterio.ordine = data.get('ordine', criterio.ordine)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'criterio': criterio.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/criteri/<int:id>', methods=['DELETE'])
+def delete_criterio(id):
+    """API per eliminare un criterio di valutazione"""
+    criterio = CriterioValutazione.query.get_or_404(id)
+
+    try:
+        db.session.delete(criterio)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+
+# ==================== GENERATORE AI VERIFICHE ====================
+
+@app.route('/api/verifiche/genera-ai', methods=['POST'])
+def genera_verifica_ai():
+    """API per generare una verifica con Claude AI"""
+    data = request.get_json()
+
+    try:
+        import anthropic
+
+        # Ottieni API key (dovrebbe essere in variabile d'ambiente o config)
+        api_key = os.environ.get('ANTHROPIC_API_KEY')
+        if not api_key:
+            return jsonify({'success': False, 'error': 'ANTHROPIC_API_KEY non configurata'}), 400
+
+        client = anthropic.Anthropic(api_key=api_key)
+
+        # Parametri per la generazione
+        materia_id = data['materia_id']
+        materia = Materia.query.get_or_404(materia_id)
+
+        argomenti = data.get('argomenti', '')
+        num_domande = data.get('num_domande', 5)
+        difficolta = data.get('difficolta', 'media')  # bassa, media, alta
+        tipo_domande = data.get('tipo_domande', 'misto')  # aperta, multipla, misto
+        punteggio_totale = data.get('punteggio_totale', 10)
+
+        # Crea il prompt per Claude
+        prompt = f"""Genera una verifica scritta per la materia {materia.nome}.
+
+PARAMETRI:
+- Argomenti: {argomenti}
+- Numero domande: {num_domande}
+- Difficoltà: {difficolta}
+- Tipo domande: {tipo_domande}
+- Punteggio totale: {punteggio_totale}
+
+Genera la verifica in formato JSON con questa struttura:
+{{
+  "titolo": "Titolo della verifica",
+  "descrizione": "Breve descrizione della verifica",
+  "domande": [
+    {{
+      "numero": 1,
+      "testo": "Testo della domanda",
+      "tipo": "aperta|multipla|vero_falso|esercizio",
+      "punteggio": 2.0,
+      "opzioni": "A) ... B) ... C) ...",
+      "risposta_corretta": "Risposta corretta se domanda chiusa",
+      "righe_risposta": 5,
+      "criteri": [
+        {{
+          "descrizione": "Criterio di valutazione 1",
+          "punteggio": 1.0
+        }},
+        {{
+          "descrizione": "Criterio di valutazione 2",
+          "punteggio": 1.0
+        }}
+      ]
+    }}
+  ]
+}}
+
+IMPORTANTE:
+- Per domande aperte, crea sempre criteri di valutazione dettagliati
+- La somma dei punteggi delle domande deve essere {punteggio_totale}
+- Per domande multiple choice, specifica le opzioni e la risposta corretta
+- Rendi le domande appropriate per il livello di difficoltà richiesto
+- Rispondi SOLO con il JSON, senza testo aggiuntivo"""
+
+        # Chiamata a Claude
+        message = client.messages.create(
+            model="claude-3-haiku-20240307",
+            max_tokens=4000,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        # Estrai il JSON dalla risposta
+        response_text = message.content[0].text
+
+        # Trova il JSON nella risposta (potrebbe essere wrappato in ```json)
+        if '```json' in response_text:
+            response_text = response_text.split('```json')[1].split('```')[0].strip()
+        elif '```' in response_text:
+            response_text = response_text.split('```')[1].split('```')[0].strip()
+
+        verifica_data = json.loads(response_text)
+
+        # Restituisci i dati generati (NON salvarli ancora nel DB)
+        return jsonify({
+            'success': True,
+            'verifica_data': verifica_data,
+            'message': 'Verifica generata con successo. Rivedi e salva.'
+        })
+
+    except anthropic.APIError as e:
+        return jsonify({'success': False, 'error': f'Errore API Claude: {str(e)}'}), 400
+    except json.JSONDecodeError as e:
+        return jsonify({'success': False, 'error': f'Errore parsing JSON: {str(e)}'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400

@@ -214,3 +214,121 @@ class Materiale(db.Model):
             'file_path': self.file_path,
             'data_caricamento': self.data_caricamento.strftime('%Y-%m-%d %H:%M')
         }
+
+
+class Verifica(db.Model):
+    """Modello per verifiche scritte strutturate"""
+    __tablename__ = 'verifiche'
+
+    id = db.Column(db.Integer, primary_key=True)
+    materia_id = db.Column(db.Integer, db.ForeignKey('materie.id'), nullable=False)
+    titolo = db.Column(db.String(200), nullable=False)
+    descrizione = db.Column(db.Text)
+    argomenti = db.Column(db.Text)  # Argomenti trattati (separati da virgola)
+    data_verifica = db.Column(db.Date, nullable=False)
+    durata_minuti = db.Column(db.Integer)  # Durata in minuti
+    punteggio_totale = db.Column(db.Float, default=0)  # Calcolato automaticamente dalla somma domande
+    data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
+    generata_ai = db.Column(db.Boolean, default=False)  # Se generata con AI
+
+    # Relazioni
+    domande = db.relationship('DomandaVerifica', backref='verifica', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Verifica {self.titolo}>'
+
+    def calcola_punteggio_totale(self):
+        """Calcola il punteggio totale dalla somma delle domande"""
+        self.punteggio_totale = sum(d.punteggio for d in self.domande)
+        return self.punteggio_totale
+
+    def to_dict(self, include_domande=False):
+        result = {
+            'id': self.id,
+            'materia_id': self.materia_id,
+            'materia_nome': self.materia.nome,
+            'titolo': self.titolo,
+            'descrizione': self.descrizione,
+            'argomenti': self.argomenti,
+            'data_verifica': self.data_verifica.strftime('%Y-%m-%d'),
+            'durata_minuti': self.durata_minuti,
+            'punteggio_totale': self.punteggio_totale,
+            'num_domande': len(self.domande),
+            'generata_ai': self.generata_ai,
+            'data_creazione': self.data_creazione.strftime('%Y-%m-%d %H:%M')
+        }
+
+        if include_domande:
+            result['domande'] = [d.to_dict(include_criteri=True) for d in self.domande]
+
+        return result
+
+
+class DomandaVerifica(db.Model):
+    """Modello per le domande di una verifica"""
+    __tablename__ = 'domande_verifica'
+
+    id = db.Column(db.Integer, primary_key=True)
+    verifica_id = db.Column(db.Integer, db.ForeignKey('verifiche.id'), nullable=False)
+    numero = db.Column(db.Integer, nullable=False)  # Numero progressivo domanda
+    testo = db.Column(db.Text, nullable=False)  # Testo della domanda
+    tipo = db.Column(db.String(50), nullable=False)  # aperta, chiusa, multipla, vero_falso, esercizio
+    punteggio = db.Column(db.Float, nullable=False)  # Punteggio massimo
+
+    # Per domande chiuse/multiple
+    opzioni = db.Column(db.Text)  # JSON con opzioni per domande a scelta multipla
+    risposta_corretta = db.Column(db.Text)  # Risposta corretta per domande chiuse
+
+    # Spazio risposta
+    righe_risposta = db.Column(db.Integer, default=5)  # Numero di righe per la risposta
+
+    note = db.Column(db.Text)  # Note aggiuntive per il docente
+
+    # Relazioni
+    criteri = db.relationship('CriterioValutazione', backref='domanda', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Domanda {self.numero} - {self.verifica.titolo}>'
+
+    def to_dict(self, include_criteri=False):
+        result = {
+            'id': self.id,
+            'verifica_id': self.verifica_id,
+            'numero': self.numero,
+            'testo': self.testo,
+            'tipo': self.tipo,
+            'punteggio': self.punteggio,
+            'opzioni': self.opzioni,
+            'risposta_corretta': self.risposta_corretta,
+            'righe_risposta': self.righe_risposta,
+            'note': self.note,
+            'num_criteri': len(self.criteri)
+        }
+
+        if include_criteri:
+            result['criteri'] = [c.to_dict() for c in self.criteri]
+
+        return result
+
+
+class CriterioValutazione(db.Model):
+    """Modello per i criteri di valutazione di una domanda"""
+    __tablename__ = 'criteri_valutazione'
+
+    id = db.Column(db.Integer, primary_key=True)
+    domanda_id = db.Column(db.Integer, db.ForeignKey('domande_verifica.id'), nullable=False)
+    descrizione = db.Column(db.Text, nullable=False)  # Descrizione del criterio
+    punteggio = db.Column(db.Float, nullable=False)  # Punteggio assegnato a questo criterio
+    ordine = db.Column(db.Integer, default=0)  # Ordine di visualizzazione
+
+    def __repr__(self):
+        return f'<Criterio {self.descrizione[:30]}... ({self.punteggio}pt)>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'domanda_id': self.domanda_id,
+            'descrizione': self.descrizione,
+            'punteggio': self.punteggio,
+            'ordine': self.ordine
+        }
