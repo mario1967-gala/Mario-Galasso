@@ -117,13 +117,13 @@ def upload_screenshot():
         return jsonify({'success': False, 'error': 'Formato file non supportato'}), 400
 
     try:
-        # Ottieni API key dal form data o dalla variabile d'ambiente
-        api_key = request.form.get('api_key') or os.environ.get('ANTHROPIC_API_KEY')
+        # Ottieni API key dal form data o dalla configurazione
+        api_key = request.form.get('api_key') or app.config.get('ANTHROPIC_API_KEY')
 
         if not api_key:
             return jsonify({
                 'success': False,
-                'error': 'Chiave API di Anthropic non fornita. Inserisci la chiave API o configurala come variabile d\'ambiente ANTHROPIC_API_KEY.'
+                'error': 'Chiave API di Anthropic non configurata. Esegui: python3 setup_api_key.py'
             }), 400
 
         # Salva il file temporaneamente
@@ -1017,10 +1017,10 @@ def genera_verifica_ai():
     try:
         import anthropic
 
-        # Ottieni API key (dovrebbe essere in variabile d'ambiente o config)
-        api_key = os.environ.get('ANTHROPIC_API_KEY')
+        # Ottieni API key dalla configurazione
+        api_key = app.config.get('ANTHROPIC_API_KEY')
         if not api_key:
-            return jsonify({'success': False, 'error': 'ANTHROPIC_API_KEY non configurata'}), 400
+            return jsonify({'success': False, 'error': 'ANTHROPIC_API_KEY non configurata. Esegui: python3 setup_api_key.py'}), 400
 
         client = anthropic.Anthropic(api_key=api_key)
 

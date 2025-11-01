@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Carica variabili d'ambiente dal file .env
+load_dotenv()
 
 class Config:
     """Configurazione dell'applicazione"""
@@ -8,3 +12,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'app', 'static', 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max file size
+
+    # API Keys
+    ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
