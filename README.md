@@ -67,7 +67,7 @@ python run.py
 
 5. Apri il browser e vai su:
 ```
-http://localhost:5000
+http://localhost:5001
 ```
 
 ## Struttura del Progetto

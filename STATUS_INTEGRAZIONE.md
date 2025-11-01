@@ -22,7 +22,7 @@ Commit: `05cd212`
 
 ### 2. Server Flask ✅
 ```
-✓ Server in esecuzione su http://localhost:5000
+✓ Server in esecuzione su http://localhost:5001
 ✓ Debug mode attivo
 ✓ Nessun errore nei log
 ✓ Tutte le route caricate correttamente
@@ -98,7 +98,7 @@ source venv/bin/activate
 python run.py &
 
 # 3. Genera verifica
-curl -X POST http://localhost:5000/api/verifiche/genera-ai \
+curl -X POST http://localhost:5001/api/verifiche/genera-ai \
   -H "Content-Type: application/json" \
   -d '{
     "materia_id": 1,
@@ -123,7 +123,7 @@ cat verifica_test.json | jq '.struttura'
 Usa il browser per accedere all'interfaccia web e creare verifiche manualmente:
 
 ```
-http://localhost:5000/verifiche
+http://localhost:5001/verifiche
 ```
 
 ---
@@ -220,7 +220,7 @@ python check_schema.py
 
 **4. Test manuale API:**
 ```bash
-curl http://localhost:5000/api/materie
+curl http://localhost:5001/api/materie
 ```
 
 ---

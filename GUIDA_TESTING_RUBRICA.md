@@ -10,7 +10,7 @@
   - `distrattori` (TEXT - JSON)
 
 ### Server
-- ✅ Server Flask in esecuzione su `http://localhost:5000`
+- ✅ Server Flask in esecuzione su `http://localhost:5001`
 - ✅ Debug mode attivo
 - ✅ API REST funzionanti
 
@@ -40,7 +40,7 @@ python run.py
 
 **3. Genera verifica con AI:**
 ```bash
-curl -X POST http://localhost:5000/api/verifiche/genera-ai \
+curl -X POST http://localhost:5001/api/verifiche/genera-ai \
   -H "Content-Type: application/json" \
   -d '{
     "materia_id": 1,
@@ -80,7 +80,7 @@ cat verifica_generata.json
 Puoi creare una verifica manualmente per testare il sistema:
 
 ```bash
-curl -X POST http://localhost:5000/api/verifiche \
+curl -X POST http://localhost:5001/api/verifiche \
   -H "Content-Type: application/json" \
   -d '{
     "materia_id": 1,
@@ -203,7 +203,7 @@ Deve contenere richiesta di "valutazione critica" o "motivazione"
 
 Apri nel browser:
 ```
-http://localhost:5000/verifiche
+http://localhost:5001/verifiche
 ```
 
 Dovresti vedere l'interfaccia per gestire le verifiche.
@@ -267,7 +267,7 @@ tail -f flask.log
 
 ```bash
 # 1. Genera verifica
-curl -X POST http://localhost:5000/api/verifiche/genera-ai \
+curl -X POST http://localhost:5001/api/verifiche/genera-ai \
   -H "Content-Type: application/json" \
   -d '{"materia_id": 1, "argomenti": "Cinematica"}' \
   > verifica.json
@@ -276,7 +276,7 @@ curl -X POST http://localhost:5000/api/verifiche/genera-ai \
 VERIFICA_DATA=$(cat verifica.json | jq '.verifica_data')
 
 # 3. Salva nel database
-curl -X POST http://localhost:5000/api/verifiche \
+curl -X POST http://localhost:5001/api/verifiche \
   -H "Content-Type: application/json" \
   -d "{
     \"materia_id\": 1,
@@ -287,7 +287,7 @@ curl -X POST http://localhost:5000/api/verifiche \
   }"
 
 # 4. Visualizza verifiche salvate
-curl http://localhost:5000/api/verifiche | python3 -m json.tool
+curl http://localhost:5001/api/verifiche | python3 -m json.tool
 ```
 
 ---
