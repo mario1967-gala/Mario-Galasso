@@ -1,0 +1,242 @@
+{
+  "materia_id": 1,
+  "titolo": "Verifica di Fisica: Cinematica (Test Rubrica 4-2-1-1)",
+  "descrizione": "Verifica strutturata secondo Rubrica Ministeriale - Struttura 4-2-1-1",
+  "argomenti": "Cinematica: moto rettilineo uniforme e uniformemente accelerato",
+  "data_verifica": "2025-11-15",
+  "durata_minuti": 60,
+  "generata_ai": false,
+  "domande": [
+    {
+      "numero": 1,
+      "livello": "BASE",
+      "testo": "Un'automobile percorre 180 km in 2 ore mantenendo una velocità costante. Calcola la velocità media dell'automobile espressa in m/s.",
+      "tipo": "esercizio",
+      "punteggio": 4.0,
+      "tempo_stimato": 8,
+      "distrattori": null,
+      "righe_risposta": 10,
+      "criteri": [
+        {
+          "descrizione": "Conversione corretta delle unità (km→m, h→s)",
+          "punteggio": 1.0,
+          "ordine": 1
+        },
+        {
+          "descrizione": "Applicazione corretta della formula v = s/t",
+          "punteggio": 2.0,
+          "ordine": 2
+        },
+        {
+          "descrizione": "Risultato corretto con unità di misura",
+          "punteggio": 1.0,
+          "ordine": 3
+        }
+      ]
+    },
+    {
+      "numero": 2,
+      "livello": "BASE",
+      "testo": "Un corpo in moto rettilineo uniformemente accelerato parte da fermo e dopo 5 secondi raggiunge la velocità di 20 m/s. Calcola l'accelerazione del corpo.",
+      "tipo": "esercizio",
+      "punteggio": 4.0,
+      "tempo_stimato": 10,
+      "distrattori": null,
+      "righe_risposta": 10,
+      "criteri": [
+        {
+          "descrizione": "Identificazione corretta dei dati (v₀=0, v=20 m/s, t=5 s)",
+          "punteggio": 1.0,
+          "ordine": 1
+        },
+        {
+          "descrizione": "Applicazione corretta della formula a = (v-v₀)/t",
+          "punteggio": 2.0,
+          "ordine": 2
+        },
+        {
+          "descrizione": "Calcolo corretto dell'accelerazione (4 m/s²)",
+          "punteggio": 1.0,
+          "ordine": 3
+        }
+      ]
+    },
+    {
+      "numero": 3,
+      "livello": "BASE",
+      "testo": "Un treno viaggia alla velocità costante di 72 km/h. Quanto tempo impiega per percorrere 36 km? Esprimi il risultato in minuti.",
+      "tipo": "esercizio",
+      "punteggio": 4.0,
+      "tempo_stimato": 9,
+      "distrattori": null,
+      "righe_risposta": 10,
+      "criteri": [
+        {
+          "descrizione": "Impostazione corretta del problema (t = s/v)",
+          "punteggio": 1.5,
+          "ordine": 1
+        },
+        {
+          "descrizione": "Calcolo corretto del tempo in ore",
+          "punteggio": 1.5,
+          "ordine": 2
+        },
+        {
+          "descrizione": "Conversione corretta in minuti (30 min)",
+          "punteggio": 1.0,
+          "ordine": 3
+        }
+      ]
+    },
+    {
+      "numero": 4,
+      "livello": "BASE",
+      "testo": "Un ciclista parte da fermo con accelerazione costante di 2 m/s². Quale velocità raggiunge dopo 6 secondi?",
+      "tipo": "esercizio",
+      "punteggio": 4.0,
+      "tempo_stimato": 8,
+      "distrattori": null,
+      "righe_risposta": 10,
+      "criteri": [
+        {
+          "descrizione": "Riconoscimento della formula v = v₀ + at",
+          "punteggio": 1.5,
+          "ordine": 1
+        },
+        {
+          "descrizione": "Sostituzione corretta dei valori (v₀=0, a=2 m/s², t=6 s)",
+          "punteggio": 1.5,
+          "ordine": 2
+        },
+        {
+          "descrizione": "Risultato corretto (12 m/s)",
+          "punteggio": 1.0,
+          "ordine": 3
+        }
+      ]
+    },
+    {
+      "numero": 5,
+      "livello": "INTERMEDIO",
+      "testo": "Un oggetto viene lanciato verticalmente verso l'alto con velocità iniziale di 30 m/s da un'altezza di 5 m dal suolo. Nella tabella seguente sono riportati alcuni dati:\n\nGrandezza | Valore\n----------|--------\nVelocità iniziale | 30 m/s\nAltezza iniziale | 5 m\nMassa dell'oggetto | 2 kg\nTemperatura ambiente | 20°C\nAccelerazione gravitazionale | 10 m/s²\nColore dell'oggetto | rosso\n\nCalcola l'altezza massima raggiunta dall'oggetto rispetto al suolo. Spiega quali dati hai utilizzato e quali hai scartato, motivando la scelta.",
+      "tipo": "esercizio",
+      "punteggio": 3.0,
+      "tempo_stimato": 7,
+      "distrattori": "massa dell'oggetto, temperatura ambiente, colore dell'oggetto",
+      "righe_risposta": 15,
+      "criteri": [
+        {
+          "descrizione": "Identificazione corretta dei dati rilevanti (v₀, h₀, g) e scarto dei distrattori",
+          "punteggio": 1.0,
+          "ordine": 1
+        },
+        {
+          "descrizione": "Applicazione corretta delle formule cinematiche (v²=v₀²-2gh o h_max=h₀+v₀²/2g)",
+          "punteggio": 1.5,
+          "ordine": 2
+        },
+        {
+          "descrizione": "Calcolo corretto (h_max = 50 m) con spiegazione del procedimento",
+          "punteggio": 0.5,
+          "ordine": 3
+        }
+      ]
+    },
+    {
+      "numero": 6,
+      "livello": "INTERMEDIO",
+      "testo": "Due automobili A e B partono contemporaneamente dalla stessa posizione. L'automobile A viaggia a velocità costante di 60 km/h. L'automobile B parte da ferma con accelerazione costante di 1.5 m/s². Nella seguente tabella sono riportate alcune informazioni:\n\nAutomobile | Velocità iniziale | Accelerazione | Colore | Massa\n-----------|------------------|---------------|--------|------\nA | 60 km/h | 0 | blu | 1200 kg\nB | 0 | 1.5 m/s² | rosso | 1100 kg\n\nDopo quanto tempo l'automobile B raggiungerà la stessa velocità dell'automobile A? Indica quali dati hai utilizzato nel calcolo e quali sono irrilevanti per la soluzione.",
+      "tipo": "esercizio",
+      "punteggio": 3.0,
+      "tempo_stimato": 8,
+      "distrattori": "colore delle automobili, massa delle automobili",
+      "righe_risposta": 15,
+      "criteri": [
+        {
+          "descrizione": "Selezione corretta dei dati rilevanti e motivazione dello scarto dei distrattori",
+          "punteggio": 1.0,
+          "ordine": 1
+        },
+        {
+          "descrizione": "Conversione unità (60 km/h = 16.67 m/s) e impostazione equazione v_A = v_B",
+          "punteggio": 1.0,
+          "ordine": 2
+        },
+        {
+          "descrizione": "Calcolo corretto del tempo (t ≈ 11.1 s)",
+          "punteggio": 1.0,
+          "ordine": 3
+        }
+      ]
+    },
+    {
+      "numero": 7,
+      "livello": "AVANZATO",
+      "testo": "Un motociclista viaggia su un rettilineo alla velocità costante di 90 km/h. A un certo istante (t=0), a 200 m davanti a lui, un semaforo diventa rosso. Il motociclista ha un tempo di reazione di 0.8 secondi, dopo di che frena con decelerazione costante di 5 m/s².\n\nRisolvi il problema seguendo questi passaggi:\n1. Calcola lo spazio percorso durante il tempo di reazione\n2. Determina la velocità e lo spazio residuo quando inizia la frenata\n3. Calcola lo spazio di frenata necessario per fermarsi completamente\n4. Verifica se il motociclista si ferma prima del semaforo o lo supera, calcolando la distanza finale dal semaforo\n\nIllustrati i risultati di ogni fase con chiarezza, includendo tutti i passaggi matematici.",
+      "tipo": "esercizio",
+      "punteggio": 5.0,
+      "tempo_stimato": 12,
+      "distrattori": null,
+      "righe_risposta": 25,
+      "criteri": [
+        {
+          "descrizione": "Fase 1: Calcolo corretto spazio durante reazione (s₁ = v·t_reazione = 20 m)",
+          "punteggio": 1.0,
+          "ordine": 1
+        },
+        {
+          "descrizione": "Fase 2: Determinazione spazio residuo (180 m) e velocità invariata (25 m/s)",
+          "punteggio": 1.0,
+          "ordine": 2
+        },
+        {
+          "descrizione": "Fase 3: Calcolo spazio frenata usando v²=v₀²+2as (s_frenata = 62.5 m)",
+          "punteggio": 1.5,
+          "ordine": 3
+        },
+        {
+          "descrizione": "Fase 4: Verifica finale e conclusione corretta (si ferma prima, a 117.5 m dal semaforo)",
+          "punteggio": 1.0,
+          "ordine": 4
+        },
+        {
+          "descrizione": "Chiarezza espositiva e completezza dei passaggi",
+          "punteggio": 0.5,
+          "ordine": 5
+        }
+      ]
+    },
+    {
+      "numero": 8,
+      "livello": "DIFFICILE",
+      "testo": "In un incidente stradale, un'automobile ha lasciato sul manto stradale una traccia di frenata lunga 45 metri prima di arrestarsi completamente. La decelerazione media durante la frenata è stata stimata in 7 m/s². Il limite di velocità su quella strada è di 50 km/h.\n\nDetermina la velocità dell'automobile all'inizio della frenata e valuta criticamente se il conducente rispettava il limite di velocità. Nella tua risposta:\n- Calcola la velocità iniziale\n- Confrontala con il limite imposto\n- Discuti se la sola traccia di frenata è sufficiente per determinare con certezza la velocità dell'automobile prima dell'incidente\n- Indica almeno due fattori che potrebbero influenzare l'accuratezza della stima",
+      "tipo": "esercizio",
+      "punteggio": 2.0,
+      "tempo_stimato": 8,
+      "distrattori": null,
+      "righe_risposta": 20,
+      "criteri": [
+        {
+          "descrizione": "Calcolo corretto della velocità iniziale (v₀ ≈ 25.1 m/s ≈ 90 km/h)",
+          "punteggio": 0.5,
+          "ordine": 1
+        },
+        {
+          "descrizione": "Confronto corretto con limite e conclusione (superava il limite di 40 km/h)",
+          "punteggio": 0.5,
+          "ordine": 2
+        },
+        {
+          "descrizione": "Valutazione critica dei limiti del metodo e discussione ragionata",
+          "punteggio": 0.5,
+          "ordine": 3
+        },
+        {
+          "descrizione": "Identificazione di almeno 2 fattori di incertezza (es: condizioni asfalto, pneumatici, pendenza, tempo reazione)",
+          "punteggio": 0.5,
+          "ordine": 4
+        }
+      ]
+    }
+  ]
+}
