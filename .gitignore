@@ -46,6 +46,7 @@ instance/
 
 # Logs
 *.log
+*.pid
 
 # Environment variables
 .env
