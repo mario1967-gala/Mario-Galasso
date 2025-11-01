@@ -1,6 +1,6 @@
 from flask import current_app as app, render_template, request, jsonify, send_from_directory
 from app import db
-from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale
+from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale, Rubrica, Criterio, Descrittore, VotoRubrica
 from app.utils import StudentExtractor
 from datetime import datetime
 import os
@@ -731,3 +731,232 @@ def get_statistiche():
         return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+# ==================== RUBRICHE DI VALUTAZIONE ====================
+
+@app.route('/rubriche')
+def rubriche():
+    """Pagina gestione rubriche di valutazione"""
+    return render_template('rubriche.html')
+
+@app.route('/api/rubriche', methods=['GET'])
+def get_rubriche():
+    """API per ottenere tutte le rubriche"""
+    rubriche = Rubrica.query.order_by(Rubrica.data_creazione.desc()).all()
+    return jsonify([r.to_dict() for r in rubriche])
+
+@app.route('/api/rubriche/<int:id>', methods=['GET'])
+def get_rubrica(id):
+    """API per ottenere una rubrica con criteri e descrittori"""
+    rubrica = Rubrica.query.get_or_404(id)
+    rubrica_dict = rubrica.to_dict()
+    rubrica_dict['criteri'] = [c.to_dict() for c in sorted(rubrica.criteri, key=lambda x: x.ordine)]
+    return jsonify(rubrica_dict)
+
+@app.route('/api/rubriche/materia/<int:materia_id>', methods=['GET'])
+def get_rubriche_materia(materia_id):
+    """API per ottenere le rubriche di una materia"""
+    rubriche = Rubrica.query.filter_by(materia_id=materia_id).order_by(Rubrica.data_creazione.desc()).all()
+    return jsonify([r.to_dict() for r in rubriche])
+
+@app.route('/api/rubriche', methods=['POST'])
+def create_rubrica():
+    """API per creare una nuova rubrica"""
+    data = request.get_json()
+
+    try:
+        rubrica = Rubrica(
+            materia_id=data['materia_id'],
+            titolo=data['titolo'],
+            descrizione=data.get('descrizione'),
+            tipo_verifica=data.get('tipo_verifica'),
+            attiva=data.get('attiva', True)
+        )
+
+        db.session.add(rubrica)
+        db.session.commit()
+
+        return jsonify({'success': True, 'rubrica': rubrica.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/rubriche/<int:id>', methods=['PUT'])
+def update_rubrica(id):
+    """API per aggiornare una rubrica"""
+    rubrica = Rubrica.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        rubrica.titolo = data.get('titolo', rubrica.titolo)
+        rubrica.descrizione = data.get('descrizione', rubrica.descrizione)
+        rubrica.tipo_verifica = data.get('tipo_verifica', rubrica.tipo_verifica)
+        rubrica.attiva = data.get('attiva', rubrica.attiva)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'rubrica': rubrica.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/rubriche/<int:id>', methods=['DELETE'])
+def delete_rubrica(id):
+    """API per eliminare una rubrica"""
+    rubrica = Rubrica.query.get_or_404(id)
+
+    try:
+        db.session.delete(rubrica)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== CRITERI ====================
+
+@app.route('/api/criteri', methods=['POST'])
+def create_criterio():
+    """API per creare un nuovo criterio"""
+    data = request.get_json()
+
+    try:
+        criterio = Criterio(
+            rubrica_id=data['rubrica_id'],
+            nome=data['nome'],
+            descrizione=data.get('descrizione'),
+            peso=data.get('peso', 1.0),
+            ordine=data.get('ordine', 0)
+        )
+
+        db.session.add(criterio)
+        db.session.commit()
+
+        return jsonify({'success': True, 'criterio': criterio.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/criteri/<int:id>', methods=['PUT'])
+def update_criterio(id):
+    """API per aggiornare un criterio"""
+    criterio = Criterio.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        criterio.nome = data.get('nome', criterio.nome)
+        criterio.descrizione = data.get('descrizione', criterio.descrizione)
+        criterio.peso = data.get('peso', criterio.peso)
+        criterio.ordine = data.get('ordine', criterio.ordine)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'criterio': criterio.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/criteri/<int:id>', methods=['DELETE'])
+def delete_criterio(id):
+    """API per eliminare un criterio"""
+    criterio = Criterio.query.get_or_404(id)
+
+    try:
+        db.session.delete(criterio)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== DESCRITTORI ====================
+
+@app.route('/api/descrittori', methods=['POST'])
+def create_descrittore():
+    """API per creare un nuovo descrittore"""
+    data = request.get_json()
+
+    try:
+        descrittore = Descrittore(
+            criterio_id=data['criterio_id'],
+            livello=data['livello'],
+            livello_nome=data['livello_nome'],
+            descrizione=data['descrizione'],
+            punteggio=data['punteggio']
+        )
+
+        db.session.add(descrittore)
+        db.session.commit()
+
+        return jsonify({'success': True, 'descrittore': descrittore.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/descrittori/<int:id>', methods=['PUT'])
+def update_descrittore(id):
+    """API per aggiornare un descrittore"""
+    descrittore = Descrittore.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        descrittore.livello = data.get('livello', descrittore.livello)
+        descrittore.livello_nome = data.get('livello_nome', descrittore.livello_nome)
+        descrittore.descrizione = data.get('descrizione', descrittore.descrizione)
+        descrittore.punteggio = data.get('punteggio', descrittore.punteggio)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'descrittore': descrittore.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/descrittori/<int:id>', methods=['DELETE'])
+def delete_descrittore(id):
+    """API per eliminare un descrittore"""
+    descrittore = Descrittore.query.get_or_404(id)
+
+    try:
+        db.session.delete(descrittore)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== VALUTAZIONE CON RUBRICA ====================
+
+@app.route('/api/voti/<int:voto_id>/rubrica', methods=['POST'])
+def valuta_con_rubrica(voto_id):
+    """API per associare valutazioni rubrica a un voto"""
+    voto = Voto.query.get_or_404(voto_id)
+    data = request.get_json()
+
+    try:
+        # Elimina valutazioni esistenti per questo voto
+        VotoRubrica.query.filter_by(voto_id=voto_id).delete()
+
+        # Crea nuove valutazioni per ogni criterio
+        for valutazione in data.get('valutazioni', []):
+            voto_rubrica = VotoRubrica(
+                voto_id=voto_id,
+                rubrica_id=data['rubrica_id'],
+                criterio_id=valutazione['criterio_id'],
+                descrittore_id=valutazione['descrittore_id'],
+                feedback=valutazione.get('feedback')
+            )
+            db.session.add(voto_rubrica)
+
+        db.session.commit()
+
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/voti/<int:voto_id>/rubrica', methods=['GET'])
+def get_valutazione_rubrica(voto_id):
+    """API per ottenere la valutazione con rubrica di un voto"""
+    valutazioni = VotoRubrica.query.filter_by(voto_id=voto_id).all()
+    return jsonify([v.to_dict() for v in valutazioni])

@@ -2,7 +2,7 @@
 """Script per avviare l'applicazione di gestione didattica"""
 
 from app import create_app, db
-from app.models import Studente, Materia, Voto, Presenza, Compito, Materiale
+from app.models import Studente, Materia, Voto, Presenza, Compito, Materiale, Rubrica, Criterio, Descrittore, VotoRubrica
 
 app = create_app()
 
@@ -16,7 +16,11 @@ def make_shell_context():
         'Voto': Voto,
         'Presenza': Presenza,
         'Compito': Compito,
-        'Materiale': Materiale
+        'Materiale': Materiale,
+        'Rubrica': Rubrica,
+        'Criterio': Criterio,
+        'Descrittore': Descrittore,
+        'VotoRubrica': VotoRubrica
     }
 
 if __name__ == '__main__':

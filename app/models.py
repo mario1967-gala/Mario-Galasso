@@ -214,3 +214,123 @@ class Materiale(db.Model):
             'file_path': self.file_path,
             'data_caricamento': self.data_caricamento.strftime('%Y-%m-%d %H:%M')
         }
+
+
+class Rubrica(db.Model):
+    """Modello per rubrica di valutazione ministeriale"""
+    __tablename__ = 'rubriche'
+
+    id = db.Column(db.Integer, primary_key=True)
+    materia_id = db.Column(db.Integer, db.ForeignKey('materie.id'), nullable=False)
+    titolo = db.Column(db.String(200), nullable=False)
+    descrizione = db.Column(db.Text)
+    tipo_verifica = db.Column(db.String(50))  # scritta, orale, pratica, progetto
+    data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
+    attiva = db.Column(db.Boolean, default=True)
+
+    # Relazioni
+    criteri = db.relationship('Criterio', backref='rubrica', lazy=True, cascade='all, delete-orphan')
+    voti_rubrica = db.relationship('VotoRubrica', backref='rubrica', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Rubrica {self.titolo}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'materia_id': self.materia_id,
+            'materia_nome': self.materia.nome,
+            'titolo': self.titolo,
+            'descrizione': self.descrizione,
+            'tipo_verifica': self.tipo_verifica,
+            'data_creazione': self.data_creazione.strftime('%Y-%m-%d %H:%M'),
+            'attiva': self.attiva,
+            'num_criteri': len(self.criteri)
+        }
+
+
+class Criterio(db.Model):
+    """Modello per criteri di valutazione della rubrica"""
+    __tablename__ = 'criteri'
+
+    id = db.Column(db.Integer, primary_key=True)
+    rubrica_id = db.Column(db.Integer, db.ForeignKey('rubriche.id'), nullable=False)
+    nome = db.Column(db.String(200), nullable=False)
+    descrizione = db.Column(db.Text)
+    peso = db.Column(db.Float, default=1.0)  # peso del criterio (0-1)
+    ordine = db.Column(db.Integer, default=0)  # ordine di visualizzazione
+
+    # Relazioni
+    descrittori = db.relationship('Descrittore', backref='criterio', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Criterio {self.nome}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'rubrica_id': self.rubrica_id,
+            'nome': self.nome,
+            'descrizione': self.descrizione,
+            'peso': self.peso,
+            'ordine': self.ordine,
+            'descrittori': [d.to_dict() for d in sorted(self.descrittori, key=lambda x: x.livello, reverse=True)]
+        }
+
+
+class Descrittore(db.Model):
+    """Modello per descrittori di competenza per ogni livello"""
+    __tablename__ = 'descrittori'
+
+    id = db.Column(db.Integer, primary_key=True)
+    criterio_id = db.Column(db.Integer, db.ForeignKey('criteri.id'), nullable=False)
+    livello = db.Column(db.Integer, nullable=False)  # 4=Avanzato, 3=Intermedio, 2=Base, 1=Iniziale
+    livello_nome = db.Column(db.String(50), nullable=False)  # Avanzato, Intermedio, Base, Iniziale
+    descrizione = db.Column(db.Text, nullable=False)
+    punteggio = db.Column(db.Float, nullable=False)  # punteggio associato (es. 10, 8, 6, 4)
+
+    def __repr__(self):
+        return f'<Descrittore {self.livello_nome}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'criterio_id': self.criterio_id,
+            'livello': self.livello,
+            'livello_nome': self.livello_nome,
+            'descrizione': self.descrizione,
+            'punteggio': self.punteggio
+        }
+
+
+class VotoRubrica(db.Model):
+    """Modello per valutazione con rubrica - collega voti ai criteri"""
+    __tablename__ = 'voti_rubrica'
+
+    id = db.Column(db.Integer, primary_key=True)
+    voto_id = db.Column(db.Integer, db.ForeignKey('voti.id'), nullable=False)
+    rubrica_id = db.Column(db.Integer, db.ForeignKey('rubriche.id'), nullable=False)
+    criterio_id = db.Column(db.Integer, db.ForeignKey('criteri.id'), nullable=False)
+    descrittore_id = db.Column(db.Integer, db.ForeignKey('descrittori.id'), nullable=False)
+    feedback = db.Column(db.Text)  # feedback specifico per questo criterio
+
+    # Relazioni
+    voto = db.relationship('Voto', backref='valutazioni_rubrica')
+    criterio = db.relationship('Criterio', backref='valutazioni')
+    descrittore = db.relationship('Descrittore', backref='valutazioni')
+
+    def __repr__(self):
+        return f'<VotoRubrica Voto:{self.voto_id} Criterio:{self.criterio_id}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'voto_id': self.voto_id,
+            'rubrica_id': self.rubrica_id,
+            'criterio_id': self.criterio_id,
+            'criterio_nome': self.criterio.nome,
+            'descrittore_id': self.descrittore_id,
+            'livello': self.descrittore.livello_nome,
+            'punteggio': self.descrittore.punteggio,
+            'feedback': self.feedback
+        }

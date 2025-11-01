@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Rubriche di Valutazione{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Rubriche di Valutazione</h2>
+        <button class="btn btn-primary" onclick="showAddRubricaModal()">+ Nuova Rubrica</button>
+    </div>
+
+    <div class="filters">
+        <select id="filterMateria" onchange="loadRubriche()">
+            <option value="">Tutte le materie</option>
+        </select>
+    </div>
+
+    <div class="rubriche-list" id="rubriche-list">
+        <div class="loading">Caricamento...</div>
+    </div>
+</div>
+
+<!-- Modal Aggiungi/Modifica Rubrica -->
+<div id="rubricaModal" class="modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3 id="modalTitle">Nuova Rubrica di Valutazione</h3>
+            <span class="close" onclick="closeRubricaModal()">&times;</span>
+        </div>
+        <form id="rubricaForm" onsubmit="saveRubrica(event)">
+            <input type="hidden" id="rubricaId">
+
+            <div class="form-group">
+                <label for="materia_id">Materia *</label>
+                <select id="materia_id" required>
+                    <option value="">Seleziona materia</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="titolo">Titolo *</label>
+                <input type="text" id="titolo" required placeholder="Es: Rubrica verifica analisi del testo">
+            </div>
+
+            <div class="form-group">
+                <label for="descrizione">Descrizione</label>
+                <textarea id="descrizione" rows="2" placeholder="Descrizione della rubrica"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo_verifica">Tipo Verifica</label>
+                <select id="tipo_verifica">
+                    <option value="scritta">Verifica Scritta</option>
+                    <option value="orale">Verifica Orale</option>
+                    <option value="pratica">Verifica Pratica</option>
+                    <option value="progetto">Progetto</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="attiva" checked>
+                    Rubrica attiva
+                </label>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRubricaModal()">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva Rubrica</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Gestione Criteri -->
+<div id="criteriModal" class="modal">
+    <div class="modal-content modal-xlarge">
+        <div class="modal-header">
+            <h3 id="criteriModalTitle">Gestione Criteri</h3>
+            <span class="close" onclick="closeCriteriModal()">&times;</span>
+        </div>
+
+        <div class="rubrica-info" id="rubricaInfo"></div>
+
+        <div class="criteri-section">
+            <div class="section-header">
+                <h4>Criteri di Valutazione</h4>
+                <button type="button" class="btn btn-sm btn-primary" onclick="showAddCriterioForm()">+ Aggiungi Criterio</button>
+            </div>
+
+            <!-- Form aggiungi criterio -->
+            <div id="addCriterioForm" class="add-criterio-form" style="display: none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="newCriterioNome" placeholder="Nome criterio (es: Conoscenza dei contenuti)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="newCriterioDescrizione" placeholder="Descrizione (opzionale)">
+                    </div>
+                    <div class="form-group-small">
+                        <input type="number" id="newCriterioPeso" placeholder="Peso" min="0" max="1" step="0.1" value="1">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-sm btn-success" onclick="addCriterio()">Salva</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelAddCriterio()">Annulla</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista criteri -->
+            <div id="criteriList" class="criteri-list">
+                <div class="loading">Caricamento criteri...</div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCriteriModal()">Chiudi</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Gestione Descrittori -->
+<div id="descrittoriModal" class="modal">
+    <div class="modal-content modal-xlarge">
+        <div class="modal-header">
+            <h3 id="descrittoriModalTitle">Gestione Descrittori</h3>
+            <span class="close" onclick="closeDescrittoriModal()">&times;</span>
+        </div>
+
+        <div class="criterio-info" id="criterioInfo"></div>
+
+        <div class="descrittori-section">
+            <p class="info-text">Definisci i 4 livelli di competenza secondo la rubrica ministeriale</p>
+
+            <div class="descrittori-grid" id="descrittoriGrid">
+                <!-- Livello 4 - Avanzato -->
+                <div class="descrittore-card livello-avanzato">
+                    <div class="livello-header">
+                        <h4>Livello 4 - Avanzato</h4>
+                        <span class="punteggio-badge">9-10</span>
+                    </div>
+                    <textarea id="desc_4" rows="4" placeholder="Descrivi le competenze del livello avanzato..."></textarea>
+                    <input type="hidden" id="desc_4_id">
+                    <input type="number" id="punt_4" value="10" min="9" max="10" step="0.25" class="punteggio-input">
+                </div>
+
+                <!-- Livello 3 - Intermedio -->
+                <div class="descrittore-card livello-intermedio">
+                    <div class="livello-header">
+                        <h4>Livello 3 - Intermedio</h4>
+                        <span class="punteggio-badge">7-8</span>
+                    </div>
+                    <textarea id="desc_3" rows="4" placeholder="Descrivi le competenze del livello intermedio..."></textarea>
+                    <input type="hidden" id="desc_3_id">
+                    <input type="number" id="punt_3" value="8" min="7" max="8.75" step="0.25" class="punteggio-input">
+                </div>
+
+                <!-- Livello 2 - Base -->
+                <div class="descrittore-card livello-base">
+                    <div class="livello-header">
+                        <h4>Livello 2 - Base</h4>
+                        <span class="punteggio-badge">6-6.75</span>
+                    </div>
+                    <textarea id="desc_2" rows="4" placeholder="Descrivi le competenze del livello base..."></textarea>
+                    <input type="hidden" id="desc_2_id">
+                    <input type="number" id="punt_2" value="6" min="6" max="6.75" step="0.25" class="punteggio-input">
+                </div>
+
+                <!-- Livello 1 - Iniziale -->
+                <div class="descrittore-card livello-iniziale">
+                    <div class="livello-header">
+                        <h4>Livello 1 - Iniziale</h4>
+                        <span class="punteggio-badge">4-5.75</span>
+                    </div>
+                    <textarea id="desc_1" rows="4" placeholder="Descrivi le competenze del livello iniziale..."></textarea>
+                    <input type="hidden" id="desc_1_id">
+                    <input type="number" id="punt_1" value="4" min="1" max="5.75" step="0.25" class="punteggio-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDescrittoriModal()">Annulla</button>
+            <button type="button" class="btn btn-primary" onclick="saveDescrittori()">Salva Descrittori</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/rubriche.js') }}"></script>
+{% endblock %}
