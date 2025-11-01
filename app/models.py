@@ -275,6 +275,13 @@ class DomandaVerifica(db.Model):
     tipo = db.Column(db.String(50), nullable=False)  # aperta, chiusa, multipla, vero_falso, esercizio
     punteggio = db.Column(db.Float, nullable=False)  # Punteggio massimo
 
+    # Criteri Rubrica Ministeriale (Struttura 4-2-1-1)
+    livello = db.Column(db.String(20), default='BASE')  # BASE, INTERMEDIO, AVANZATO, DIFFICILE
+    tempo_stimato = db.Column(db.Integer)  # Tempo stimato in minuti
+
+    # Per domande INTERMEDIE - Distrattori
+    distrattori = db.Column(db.Text)  # JSON con distrattori (dati irrilevanti ma plausibili)
+
     # Per domande chiuse/multiple
     opzioni = db.Column(db.Text)  # JSON con opzioni per domande a scelta multipla
     risposta_corretta = db.Column(db.Text)  # Risposta corretta per domande chiuse
@@ -298,6 +305,9 @@ class DomandaVerifica(db.Model):
             'testo': self.testo,
             'tipo': self.tipo,
             'punteggio': self.punteggio,
+            'livello': self.livello,
+            'tempo_stimato': self.tempo_stimato,
+            'distrattori': self.distrattori,
             'opzioni': self.opzioni,
             'risposta_corretta': self.risposta_corretta,
             'righe_risposta': self.righe_risposta,

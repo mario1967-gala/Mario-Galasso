@@ -3,6 +3,7 @@ from app import db
 from app.models import (Classe, Studente, Materia, Voto, Presenza, Compito, Materiale,
                         Verifica, DomandaVerifica, CriterioValutazione)
 from app.utils import StudentExtractor
+from app.prompt_template_verifica import genera_prompt_verifica
 from datetime import datetime
 import os
 import json
@@ -789,6 +790,11 @@ def create_verifica():
                     testo=domanda_data['testo'],
                     tipo=domanda_data.get('tipo', 'aperta'),
                     punteggio=float(domanda_data['punteggio']),
+                    # Nuovi campi Rubrica Ministeriale
+                    livello=domanda_data.get('livello', 'BASE'),
+                    tempo_stimato=domanda_data.get('tempo_stimato'),
+                    distrattori=domanda_data.get('distrattori'),
+                    # Campi esistenti
                     opzioni=domanda_data.get('opzioni'),
                     risposta_corretta=domanda_data.get('risposta_corretta'),
                     righe_risposta=domanda_data.get('righe_risposta', 5),
@@ -1011,7 +1017,10 @@ def delete_criterio(id):
 
 @app.route('/api/verifiche/genera-ai', methods=['POST'])
 def genera_verifica_ai():
-    """API per generare una verifica con Claude AI"""
+    """
+    API per generare una verifica con Claude AI
+    secondo Rubrica Ministeriale (Struttura 4-2-1-1)
+    """
     data = request.get_json()
 
     try:
@@ -1029,59 +1038,21 @@ def genera_verifica_ai():
         materia = Materia.query.get_or_404(materia_id)
 
         argomenti = data.get('argomenti', '')
-        num_domande = data.get('num_domande', 5)
-        difficolta = data.get('difficolta', 'media')  # bassa, media, alta
-        tipo_domande = data.get('tipo_domande', 'misto')  # aperta, multipla, misto
-        punteggio_totale = data.get('punteggio_totale', 10)
+        classe = data.get('classe', 'Terza')
+        indirizzo = data.get('indirizzo', 'Scientifico')
 
-        # Crea il prompt per Claude
-        prompt = f"""Genera una verifica scritta per la materia {materia.nome}.
+        # Usa il nuovo prompt template basato sul PDF
+        prompt = genera_prompt_verifica(
+            materia_nome=materia.nome,
+            argomenti=argomenti,
+            classe=classe,
+            indirizzo=indirizzo
+        )
 
-PARAMETRI:
-- Argomenti: {argomenti}
-- Numero domande: {num_domande}
-- Difficoltà: {difficolta}
-- Tipo domande: {tipo_domande}
-- Punteggio totale: {punteggio_totale}
-
-Genera la verifica in formato JSON con questa struttura:
-{{
-  "titolo": "Titolo della verifica",
-  "descrizione": "Breve descrizione della verifica",
-  "domande": [
-    {{
-      "numero": 1,
-      "testo": "Testo della domanda",
-      "tipo": "aperta|multipla|vero_falso|esercizio",
-      "punteggio": 2.0,
-      "opzioni": "A) ... B) ... C) ...",
-      "risposta_corretta": "Risposta corretta se domanda chiusa",
-      "righe_risposta": 5,
-      "criteri": [
-        {{
-          "descrizione": "Criterio di valutazione 1",
-          "punteggio": 1.0
-        }},
-        {{
-          "descrizione": "Criterio di valutazione 2",
-          "punteggio": 1.0
-        }}
-      ]
-    }}
-  ]
-}}
-
-IMPORTANTE:
-- Per domande aperte, crea sempre criteri di valutazione dettagliati
-- La somma dei punteggi delle domande deve essere {punteggio_totale}
-- Per domande multiple choice, specifica le opzioni e la risposta corretta
-- Rendi le domande appropriate per il livello di difficoltà richiesto
-- Rispondi SOLO con il JSON, senza testo aggiuntivo"""
-
-        # Chiamata a Claude
+        # Chiamata a Claude con modello più potente per task complessi
         message = client.messages.create(
-            model="claude-3-haiku-20240307",
-            max_tokens=4000,
+            model="claude-3-5-sonnet-20241022",  # Modello più avanzato per task complessi
+            max_tokens=8000,  # Aumentato per gestire output più lungo
             messages=[
                 {"role": "user", "content": prompt}
             ]
@@ -1098,16 +1069,36 @@ IMPORTANTE:
 
         verifica_data = json.loads(response_text)
 
+        # Validazione struttura 4-2-1-1
+        domande = verifica_data.get('domande', [])
+        livelli_count = {'BASE': 0, 'INTERMEDIO': 0, 'AVANZATO': 0, 'DIFFICILE': 0}
+
+        for domanda in domande:
+            livello = domanda.get('livello', 'BASE')
+            livelli_count[livello] += 1
+
+        # Verifica che la struttura sia corretta
+        if (livelli_count['BASE'] != 4 or
+            livelli_count['INTERMEDIO'] != 2 or
+            livelli_count['AVANZATO'] != 1 or
+            livelli_count['DIFFICILE'] != 1):
+
+            return jsonify({
+                'success': False,
+                'error': f'Struttura non conforme 4-2-1-1. Trovati: {livelli_count}'
+            }), 400
+
         # Restituisci i dati generati (NON salvarli ancora nel DB)
         return jsonify({
             'success': True,
             'verifica_data': verifica_data,
-            'message': 'Verifica generata con successo. Rivedi e salva.'
+            'message': 'Verifica generata con successo secondo Rubrica Ministeriale 4-2-1-1. Rivedi e salva.',
+            'struttura': livelli_count
         })
 
     except anthropic.APIError as e:
         return jsonify({'success': False, 'error': f'Errore API Claude: {str(e)}'}), 400
     except json.JSONDecodeError as e:
-        return jsonify({'success': False, 'error': f'Errore parsing JSON: {str(e)}'}), 400
+        return jsonify({'success': False, 'error': f'Errore parsing JSON: {str(e)}. Response: {response_text[:500]}'}), 400
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
