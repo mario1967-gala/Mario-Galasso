@@ -722,6 +722,7 @@ def get_statistiche():
     """API per ottenere statistiche generali"""
     try:
         stats = {
+            'totale_classi': Classe.query.count(),
             'totale_studenti': Studente.query.count(),
             'totale_materie': Materia.query.count(),
             'totale_voti': Voto.query.count(),

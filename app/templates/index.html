@@ -11,6 +11,14 @@
 
     <div class="stats-grid">
         <div class="stat-card">
+            <div class="stat-icon">🏫</div>
+            <div class="stat-info">
+                <h3 id="stat-classi">0</h3>
+                <p>Classi</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
             <div class="stat-icon">👨‍🎓</div>
             <div class="stat-info">
                 <h3 id="stat-studenti">0</h3>
@@ -55,6 +63,10 @@
         <div class="dashboard-section">
             <h3>Accesso Rapido</h3>
             <div class="quick-links">
+                <a href="/classi" class="quick-link-card">
+                    <span class="icon">🏫</span>
+                    <span>Gestisci Classi</span>
+                </a>
                 <a href="/studenti" class="quick-link-card">
                     <span class="icon">👨‍🎓</span>
                     <span>Gestisci Studenti</span>
@@ -91,6 +103,7 @@ async function loadStats() {
         const response = await fetch('/api/statistiche');
         const stats = await response.json();
 
+        document.getElementById('stat-classi').textContent = stats.totale_classi;
         document.getElementById('stat-studenti').textContent = stats.totale_studenti;
         document.getElementById('stat-materie').textContent = stats.totale_materie;
         document.getElementById('stat-voti').textContent = stats.totale_voti;
