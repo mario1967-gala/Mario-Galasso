@@ -83,6 +83,7 @@ class Materia(db.Model):
     voti = db.relationship('Voto', backref='materia', lazy=True, cascade='all, delete-orphan')
     compiti = db.relationship('Compito', backref='materia', lazy=True, cascade='all, delete-orphan')
     materiali = db.relationship('Materiale', backref='materia', lazy=True, cascade='all, delete-orphan')
+    rubriche = db.relationship('Rubrica', backref='materia', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Materia {self.nome}>'
