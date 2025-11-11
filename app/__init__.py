@@ -11,8 +11,12 @@ def create_app(config_class=Config):
 
     db.init_app(app)
 
+    # Importa le routes e registrale sull'app
+    from app import routes
+    routes.register_routes(app)
+
     with app.app_context():
-        from app import routes, models
+        from app import models
         db.create_all()
 
     return app
