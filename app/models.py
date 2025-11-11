@@ -214,3 +214,115 @@ class Materiale(db.Model):
             'file_path': self.file_path,
             'data_caricamento': self.data_caricamento.strftime('%Y-%m-%d %H:%M')
         }
+
+
+class Verifica(db.Model):
+    """Modello per le verifiche con esercizi multipli"""
+    __tablename__ = 'verifiche'
+
+    id = db.Column(db.Integer, primary_key=True)
+    materia_id = db.Column(db.Integer, db.ForeignKey('materie.id'), nullable=False)
+    classe_id = db.Column(db.Integer, db.ForeignKey('classi.id'), nullable=False)
+    titolo = db.Column(db.String(200), nullable=False)
+    data = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    descrizione = db.Column(db.Text)
+
+    # Relazioni
+    materia = db.relationship('Materia', backref='verifiche')
+    classe = db.relationship('Classe', backref='verifiche')
+    esercizi = db.relationship('Esercizio', backref='verifica', lazy=True, cascade='all, delete-orphan', order_by='Esercizio.numero')
+
+    def __repr__(self):
+        return f'<Verifica {self.titolo}>'
+
+    def calcola_voto_studente(self, studente_id):
+        """Calcola il voto finale pesato per uno studente"""
+        somma_pesata = 0
+        somma_pesi = 0
+
+        for esercizio in self.esercizi:
+            voto_es = VotoEsercizio.query.filter_by(
+                esercizio_id=esercizio.id,
+                studente_id=studente_id
+            ).first()
+
+            if voto_es and voto_es.punteggio is not None:
+                # Normalizza il punteggio su 10
+                voto_normalizzato = (voto_es.punteggio / esercizio.punteggio_max) * 10
+                somma_pesata += voto_normalizzato * esercizio.peso
+                somma_pesi += esercizio.peso
+
+        if somma_pesi == 0:
+            return None
+
+        return round(somma_pesata / somma_pesi, 2)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'materia_id': self.materia_id,
+            'materia_nome': self.materia.nome,
+            'classe_id': self.classe_id,
+            'classe_nome': self.classe.nome,
+            'titolo': self.titolo,
+            'data': self.data.strftime('%Y-%m-%d'),
+            'descrizione': self.descrizione,
+            'num_esercizi': len(self.esercizi)
+        }
+
+
+class Esercizio(db.Model):
+    """Modello per gli esercizi di una verifica"""
+    __tablename__ = 'esercizi'
+
+    id = db.Column(db.Integer, primary_key=True)
+    verifica_id = db.Column(db.Integer, db.ForeignKey('verifiche.id'), nullable=False)
+    numero = db.Column(db.Integer, nullable=False)  # Numero progressivo dell'esercizio
+    titolo = db.Column(db.String(200), nullable=False)
+    descrizione = db.Column(db.Text)
+    punteggio_max = db.Column(db.Float, nullable=False)  # Punteggio massimo per l'esercizio
+    peso = db.Column(db.Integer, nullable=False, default=1)  # Peso da 1 a 10
+
+    # Relazioni
+    voti_esercizio = db.relationship('VotoEsercizio', backref='esercizio', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Esercizio {self.numero} - {self.titolo}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'verifica_id': self.verifica_id,
+            'numero': self.numero,
+            'titolo': self.titolo,
+            'descrizione': self.descrizione,
+            'punteggio_max': self.punteggio_max,
+            'peso': self.peso
+        }
+
+
+class VotoEsercizio(db.Model):
+    """Modello per i voti dei singoli esercizi"""
+    __tablename__ = 'voti_esercizi'
+
+    id = db.Column(db.Integer, primary_key=True)
+    esercizio_id = db.Column(db.Integer, db.ForeignKey('esercizi.id'), nullable=False)
+    studente_id = db.Column(db.Integer, db.ForeignKey('studenti.id'), nullable=False)
+    punteggio = db.Column(db.Float)  # Punteggio ottenuto
+    note = db.Column(db.Text)
+
+    # Relazioni
+    studente = db.relationship('Studente', backref='voti_esercizi')
+
+    def __repr__(self):
+        return f'<VotoEsercizio {self.studente.cognome} - Es.{self.esercizio.numero}: {self.punteggio}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'esercizio_id': self.esercizio_id,
+            'studente_id': self.studente_id,
+            'studente_nome': f"{self.studente.cognome} {self.studente.nome}",
+            'punteggio': self.punteggio,
+            'note': self.note
+        }

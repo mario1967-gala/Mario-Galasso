@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+
+{% block title %}Verifiche con Esercizi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2>Registro Verifiche</h2>
+        <button class="btn btn-primary" onclick="mostraNuovaVerifica()">Nuova Verifica</button>
+    </div>
+
+    <!-- Sezione Verifiche -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Verifiche</h3>
+        </div>
+        <div class="card-body">
+            <div id="verifiche-list" class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Titolo</th>
+                            <th>Classe</th>
+                            <th>Materia</th>
+                            <th>Esercizi</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="verifiche-tbody">
+                        <tr>
+                            <td colspan="6" class="text-center">Caricamento...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sezione Registro -->
+    <div id="registro-section" class="card" style="display: none; margin-top: 20px;">
+        <div class="card-header">
+            <h3 id="registro-title">Registro Verifica</h3>
+            <button class="btn btn-secondary" onclick="chiudiRegistro()">Chiudi</button>
+        </div>
+        <div class="card-body">
+            <!-- Info Verifica -->
+            <div id="verifica-info" style="margin-bottom: 20px;"></div>
+
+            <!-- Pulsante Aggiungi Esercizio -->
+            <button class="btn btn-success" onclick="mostraNuovoEsercizio()" style="margin-bottom: 15px;">
+                Aggiungi Esercizio
+            </button>
+
+            <!-- Tabella Registro -->
+            <div id="registro-table-container" class="table-responsive"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuova Verifica -->
+<div id="modal-verifica" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Nuova Verifica</h3>
+            <span class="close" onclick="chiudiModalVerifica()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="form-verifica">
+                <div class="form-group">
+                    <label>Titolo:</label>
+                    <input type="text" id="verifica-titolo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Classe:</label>
+                    <select id="verifica-classe" class="form-control" required>
+                        <option value="">Seleziona classe...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Materia:</label>
+                    <select id="verifica-materia" class="form-control" required>
+                        <option value="">Seleziona materia...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Data:</label>
+                    <input type="date" id="verifica-data" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Descrizione:</label>
+                    <textarea id="verifica-descrizione" class="form-control" rows="3"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="chiudiModalVerifica()">Annulla</button>
+            <button class="btn btn-primary" onclick="salvaVerifica()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuovo Esercizio -->
+<div id="modal-esercizio" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Nuovo Esercizio</h3>
+            <span class="close" onclick="chiudiModalEsercizio()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="form-esercizio">
+                <div class="form-group">
+                    <label>Numero:</label>
+                    <input type="number" id="esercizio-numero" class="form-control" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Titolo:</label>
+                    <input type="text" id="esercizio-titolo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Descrizione:</label>
+                    <textarea id="esercizio-descrizione" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Punteggio Massimo:</label>
+                    <input type="number" id="esercizio-punteggio" class="form-control" step="0.5" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Peso (1-10):</label>
+                    <input type="number" id="esercizio-peso" class="form-control" min="1" max="10" required>
+                    <small class="form-text">Il peso determina l'importanza dell'esercizio nel calcolo della media</small>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="chiudiModalEsercizio()">Annulla</button>
+            <button class="btn btn-primary" onclick="salvaEsercizio()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ddd;
+    text-align: right;
+    border-radius: 0 0 8px 8px;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.registro-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.registro-table th,
+.registro-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.registro-table th {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+.registro-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.registro-table tr:hover {
+    background-color: #ddd;
+}
+
+.voto-input {
+    width: 60px;
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.voto-finale {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #2196F3;
+}
+
+.esercizio-header {
+    font-size: 0.9em;
+}
+
+.peso-badge {
+    display: inline-block;
+    background-color: #ff9800;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let verificaCorrente = null;
+let classi = [];
+let materie = [];
+
+// Carica dati iniziali
+document.addEventListener('DOMContentLoaded', function() {
+    caricaVerifiche();
+    caricaClassi();
+    caricaMaterie();
+
+    // Imposta data di oggi come default
+    document.getElementById('verifica-data').valueAsDate = new Date();
+});
+
+async function caricaClassi() {
+    try {
+        const response = await fetch('/api/classi');
+        classi = await response.json();
+
+        const select = document.getElementById('verifica-classe');
+        select.innerHTML = '<option value="">Seleziona classe...</option>';
+        classi.forEach(classe => {
+            const option = document.createElement('option');
+            option.value = classe.id;
+            option.textContent = classe.nome;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Errore caricamento classi:', error);
+    }
+}
+
+async function caricaMaterie() {
+    try {
+        const response = await fetch('/api/materie');
+        materie = await response.json();
+
+        const select = document.getElementById('verifica-materia');
+        select.innerHTML = '<option value="">Seleziona materia...</option>';
+        materie.forEach(materia => {
+            const option = document.createElement('option');
+            option.value = materia.id;
+            option.textContent = materia.nome;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Errore caricamento materie:', error);
+    }
+}
+
+async function caricaVerifiche() {
+    try {
+        const response = await fetch('/api/verifiche');
+        const verifiche = await response.json();
+
+        const tbody = document.getElementById('verifiche-tbody');
+
+        if (verifiche.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nessuna verifica presente</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        verifiche.forEach(verifica => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${formatData(verifica.data)}</td>
+                <td>${verifica.titolo}</td>
+                <td>${verifica.classe_nome}</td>
+                <td>${verifica.materia_nome}</td>
+                <td>${verifica.num_esercizi}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="apriRegistro(${verifica.id})">Registro</button>
+                    <button class="btn btn-sm btn-danger" onclick="eliminaVerifica(${verifica.id})">Elimina</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Errore caricamento verifiche:', error);
+    }
+}
+
+function mostraNuovaVerifica() {
+    document.getElementById('modal-verifica').style.display = 'block';
+    document.getElementById('form-verifica').reset();
+    document.getElementById('verifica-data').valueAsDate = new Date();
+}
+
+function chiudiModalVerifica() {
+    document.getElementById('modal-verifica').style.display = 'none';
+}
+
+async function salvaVerifica() {
+    const data = {
+        titolo: document.getElementById('verifica-titolo').value,
+        classe_id: parseInt(document.getElementById('verifica-classe').value),
+        materia_id: parseInt(document.getElementById('verifica-materia').value),
+        data: document.getElementById('verifica-data').value,
+        descrizione: document.getElementById('verifica-descrizione').value
+    };
+
+    try {
+        const response = await fetch('/api/verifiche', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Verifica creata con successo!');
+            chiudiModalVerifica();
+            caricaVerifiche();
+        } else {
+            alert('Errore: ' + result.error);
+        }
+    } catch (error) {
+        alert('Errore nella creazione della verifica');
+        console.error(error);
+    }
+}
+
+async function eliminaVerifica(id) {
+    if (!confirm('Sei sicuro di voler eliminare questa verifica?')) return;
+
+    try {
+        const response = await fetch(`/api/verifiche/${id}`, {method: 'DELETE'});
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Verifica eliminata');
+            caricaVerifiche();
+            if (verificaCorrente && verificaCorrente.id === id) {
+                chiudiRegistro();
+            }
+        }
+    } catch (error) {
+        alert('Errore nell\'eliminazione');
+    }
+}
+
+async function apriRegistro(verificaId) {
+    try {
+        const response = await fetch(`/api/verifiche/${verificaId}/registro`);
+        const data = await response.json();
+
+        verificaCorrente = data.verifica;
+        verificaCorrente.esercizi = data.esercizi;
+        verificaCorrente.registro = data.registro;
+
+        document.getElementById('registro-title').textContent = `Registro: ${data.verifica.titolo}`;
+
+        // Info verifica
+        const infoDiv = document.getElementById('verifica-info');
+        infoDiv.innerHTML = `
+            <p><strong>Classe:</strong> ${data.verifica.classe_nome} |
+               <strong>Materia:</strong> ${data.verifica.materia_nome} |
+               <strong>Data:</strong> ${formatData(data.verifica.data)}</p>
+        `;
+
+        // Crea tabella registro
+        mostraRegistro(data);
+
+        document.getElementById('registro-section').style.display = 'block';
+        document.getElementById('registro-section').scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+        alert('Errore nel caricamento del registro');
+        console.error(error);
+    }
+}
+
+function mostraRegistro(data) {
+    const container = document.getElementById('registro-table-container');
+
+    if (data.esercizi.length === 0) {
+        container.innerHTML = '<p>Nessun esercizio configurato. Aggiungi degli esercizi per iniziare.</p>';
+        return;
+    }
+
+    let html = '<table class="registro-table"><thead><tr>';
+    html += '<th rowspan="2">Studente</th>';
+
+    // Header esercizi
+    data.esercizi.forEach(es => {
+        html += `<th class="esercizio-header">
+            Es. ${es.numero}: ${es.titolo}<br>
+            <small>Max: ${es.punteggio_max} pts</small>
+            <span class="peso-badge">Peso: ${es.peso}</span>
+        </th>`;
+    });
+
+    html += '<th rowspan="2" style="background-color: #2196F3;">Voto Finale</th>';
+    html += '</tr></thead><tbody>';
+
+    // Righe studenti
+    data.registro.forEach(riga => {
+        html += `<tr><td><strong>${riga.studente_cognome} ${riga.studente_nome}</strong></td>`;
+
+        // Voti esercizi
+        riga.voti_esercizi.forEach(voto => {
+            html += `<td>
+                <input type="number"
+                       class="voto-input"
+                       step="0.5"
+                       min="0"
+                       max="${voto.punteggio_max}"
+                       value="${voto.punteggio || ''}"
+                       placeholder="0"
+                       onchange="salvaVotoEsercizio(${riga.studente_id}, ${voto.esercizio_id}, this.value)">
+            </td>`;
+        });
+
+        // Voto finale
+        html += `<td class="voto-finale">${riga.voto_finale !== null ? riga.voto_finale.toFixed(2) : '-'}</td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+async function salvaVotoEsercizio(studenteId, esercizioId, punteggio) {
+    const data = {
+        studente_id: studenteId,
+        esercizio_id: esercizioId,
+        punteggio: punteggio === '' ? null : parseFloat(punteggio)
+    };
+
+    try {
+        const response = await fetch('/api/voti-esercizi', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Ricarica il registro per aggiornare il voto finale
+            apriRegistro(verificaCorrente.id);
+        } else {
+            alert('Errore nel salvataggio: ' + result.error);
+        }
+    } catch (error) {
+        alert('Errore nel salvataggio del voto');
+        console.error(error);
+    }
+}
+
+function mostraNuovoEsercizio() {
+    if (!verificaCorrente) {
+        alert('Seleziona prima una verifica');
+        return;
+    }
+
+    document.getElementById('modal-esercizio').style.display = 'block';
+    document.getElementById('form-esercizio').reset();
+
+    // Suggerisci il prossimo numero
+    const nextNum = verificaCorrente.esercizi.length + 1;
+    document.getElementById('esercizio-numero').value = nextNum;
+}
+
+function chiudiModalEsercizio() {
+    document.getElementById('modal-esercizio').style.display = 'none';
+}
+
+async function salvaEsercizio() {
+    const data = {
+        numero: parseInt(document.getElementById('esercizio-numero').value),
+        titolo: document.getElementById('esercizio-titolo').value,
+        descrizione: document.getElementById('esercizio-descrizione').value,
+        punteggio_max: parseFloat(document.getElementById('esercizio-punteggio').value),
+        peso: parseInt(document.getElementById('esercizio-peso').value)
+    };
+
+    try {
+        const response = await fetch(`/api/verifiche/${verificaCorrente.id}/esercizi`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Esercizio aggiunto con successo!');
+            chiudiModalEsercizio();
+            apriRegistro(verificaCorrente.id); // Ricarica il registro
+        } else {
+            alert('Errore: ' + result.error);
+        }
+    } catch (error) {
+        alert('Errore nell\'aggiunta dell\'esercizio');
+        console.error(error);
+    }
+}
+
+function chiudiRegistro() {
+    document.getElementById('registro-section').style.display = 'none';
+    verificaCorrente = null;
+}
+
+function formatData(dataStr) {
+    const data = new Date(dataStr);
+    return data.toLocaleDateString('it-IT');
+}
+
+// Chiudi modal se si clicca fuori
+window.onclick = function(event) {
+    const modalVerifica = document.getElementById('modal-verifica');
+    const modalEsercizio = document.getElementById('modal-esercizio');
+
+    if (event.target === modalVerifica) {
+        chiudiModalVerifica();
+    }
+    if (event.target === modalEsercizio) {
+        chiudiModalEsercizio();
+    }
+}
+</script>
+{% endblock %}

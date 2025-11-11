@@ -1,6 +1,6 @@
 from flask import current_app as app, render_template, request, jsonify, send_from_directory
 from app import db
-from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale
+from app.models import Classe, Studente, Materia, Voto, Presenza, Compito, Materiale, Verifica, Esercizio, VotoEsercizio
 from app.utils import StudentExtractor
 from datetime import datetime
 import os
@@ -709,6 +709,274 @@ def delete_materiale(id):
 
     try:
         db.session.delete(materiale)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== VERIFICHE CON ESERCIZI ====================
+
+@app.route('/verifiche')
+def verifiche():
+    """Pagina gestione verifiche con esercizi"""
+    return render_template('verifiche.html')
+
+@app.route('/api/verifiche', methods=['GET'])
+def get_verifiche():
+    """API per ottenere tutte le verifiche"""
+    verifiche = Verifica.query.order_by(Verifica.data.desc()).all()
+    return jsonify([v.to_dict() for v in verifiche])
+
+@app.route('/api/verifiche/<int:id>', methods=['GET'])
+def get_verifica(id):
+    """API per ottenere una singola verifica"""
+    verifica = Verifica.query.get_or_404(id)
+    return jsonify(verifica.to_dict())
+
+@app.route('/api/verifiche', methods=['POST'])
+def create_verifica():
+    """API per creare una nuova verifica"""
+    data = request.get_json()
+
+    try:
+        verifica = Verifica(
+            materia_id=data['materia_id'],
+            classe_id=data['classe_id'],
+            titolo=data['titolo'],
+            data=datetime.strptime(data['data'], '%Y-%m-%d').date(),
+            descrizione=data.get('descrizione')
+        )
+
+        db.session.add(verifica)
+        db.session.commit()
+
+        return jsonify({'success': True, 'verifica': verifica.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/verifiche/<int:id>', methods=['PUT'])
+def update_verifica(id):
+    """API per aggiornare una verifica"""
+    verifica = Verifica.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        verifica.titolo = data.get('titolo', verifica.titolo)
+        verifica.descrizione = data.get('descrizione', verifica.descrizione)
+        if 'data' in data:
+            verifica.data = datetime.strptime(data['data'], '%Y-%m-%d').date()
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'verifica': verifica.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/verifiche/<int:id>', methods=['DELETE'])
+def delete_verifica(id):
+    """API per eliminare una verifica"""
+    verifica = Verifica.query.get_or_404(id)
+
+    try:
+        db.session.delete(verifica)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== ESERCIZI ====================
+
+@app.route('/api/verifiche/<int:verifica_id>/esercizi', methods=['GET'])
+def get_esercizi_verifica(verifica_id):
+    """API per ottenere gli esercizi di una verifica"""
+    verifica = Verifica.query.get_or_404(verifica_id)
+    return jsonify([e.to_dict() for e in verifica.esercizi])
+
+@app.route('/api/verifiche/<int:verifica_id>/esercizi', methods=['POST'])
+def create_esercizio(verifica_id):
+    """API per creare un nuovo esercizio"""
+    verifica = Verifica.query.get_or_404(verifica_id)
+    data = request.get_json()
+
+    try:
+        esercizio = Esercizio(
+            verifica_id=verifica_id,
+            numero=data['numero'],
+            titolo=data['titolo'],
+            descrizione=data.get('descrizione'),
+            punteggio_max=float(data['punteggio_max']),
+            peso=int(data['peso'])
+        )
+
+        # Valida il peso (deve essere tra 1 e 10)
+        if esercizio.peso < 1 or esercizio.peso > 10:
+            return jsonify({'success': False, 'error': 'Il peso deve essere tra 1 e 10'}), 400
+
+        db.session.add(esercizio)
+        db.session.commit()
+
+        return jsonify({'success': True, 'esercizio': esercizio.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/esercizi/<int:id>', methods=['GET'])
+def get_esercizio(id):
+    """API per ottenere un singolo esercizio"""
+    esercizio = Esercizio.query.get_or_404(id)
+    return jsonify(esercizio.to_dict())
+
+@app.route('/api/esercizi/<int:id>', methods=['PUT'])
+def update_esercizio(id):
+    """API per aggiornare un esercizio"""
+    esercizio = Esercizio.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        esercizio.numero = data.get('numero', esercizio.numero)
+        esercizio.titolo = data.get('titolo', esercizio.titolo)
+        esercizio.descrizione = data.get('descrizione', esercizio.descrizione)
+        if 'punteggio_max' in data:
+            esercizio.punteggio_max = float(data['punteggio_max'])
+        if 'peso' in data:
+            peso = int(data['peso'])
+            if peso < 1 or peso > 10:
+                return jsonify({'success': False, 'error': 'Il peso deve essere tra 1 e 10'}), 400
+            esercizio.peso = peso
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'esercizio': esercizio.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/esercizi/<int:id>', methods=['DELETE'])
+def delete_esercizio(id):
+    """API per eliminare un esercizio"""
+    esercizio = Esercizio.query.get_or_404(id)
+
+    try:
+        db.session.delete(esercizio)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# ==================== REGISTRO VOTI ESERCIZI ====================
+
+@app.route('/api/verifiche/<int:verifica_id>/registro', methods=['GET'])
+def get_registro_verifica(verifica_id):
+    """API per ottenere il registro completo di una verifica"""
+    verifica = Verifica.query.get_or_404(verifica_id)
+
+    # Ottieni tutti gli studenti della classe ordinati alfabeticamente
+    studenti = Studente.query.filter_by(classe_id=verifica.classe_id).order_by(Studente.cognome, Studente.nome).all()
+
+    # Costruisci il registro
+    registro = []
+    for studente in studenti:
+        voti_studente = []
+
+        for esercizio in verifica.esercizi:
+            voto_es = VotoEsercizio.query.filter_by(
+                esercizio_id=esercizio.id,
+                studente_id=studente.id
+            ).first()
+
+            voti_studente.append({
+                'esercizio_id': esercizio.id,
+                'esercizio_numero': esercizio.numero,
+                'esercizio_titolo': esercizio.titolo,
+                'punteggio_max': esercizio.punteggio_max,
+                'peso': esercizio.peso,
+                'punteggio': voto_es.punteggio if voto_es else None,
+                'voto_id': voto_es.id if voto_es else None,
+                'note': voto_es.note if voto_es else None
+            })
+
+        # Calcola il voto finale pesato
+        voto_finale = verifica.calcola_voto_studente(studente.id)
+
+        registro.append({
+            'studente_id': studente.id,
+            'studente_nome': studente.nome,
+            'studente_cognome': studente.cognome,
+            'voti_esercizi': voti_studente,
+            'voto_finale': voto_finale
+        })
+
+    return jsonify({
+        'verifica': verifica.to_dict(),
+        'esercizi': [e.to_dict() for e in verifica.esercizi],
+        'registro': registro
+    })
+
+@app.route('/api/voti-esercizi', methods=['POST'])
+def create_voto_esercizio():
+    """API per creare o aggiornare un voto per un esercizio"""
+    data = request.get_json()
+
+    try:
+        # Verifica se esiste già un voto per questo studente e esercizio
+        voto_esistente = VotoEsercizio.query.filter_by(
+            esercizio_id=data['esercizio_id'],
+            studente_id=data['studente_id']
+        ).first()
+
+        if voto_esistente:
+            # Aggiorna il voto esistente
+            voto_esistente.punteggio = float(data['punteggio']) if data.get('punteggio') is not None else None
+            voto_esistente.note = data.get('note')
+            db.session.commit()
+            return jsonify({'success': True, 'voto': voto_esistente.to_dict()})
+        else:
+            # Crea nuovo voto
+            voto = VotoEsercizio(
+                esercizio_id=data['esercizio_id'],
+                studente_id=data['studente_id'],
+                punteggio=float(data['punteggio']) if data.get('punteggio') is not None else None,
+                note=data.get('note')
+            )
+
+            db.session.add(voto)
+            db.session.commit()
+
+            return jsonify({'success': True, 'voto': voto.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/voti-esercizi/<int:id>', methods=['PUT'])
+def update_voto_esercizio(id):
+    """API per aggiornare un voto di un esercizio"""
+    voto = VotoEsercizio.query.get_or_404(id)
+    data = request.get_json()
+
+    try:
+        if 'punteggio' in data:
+            voto.punteggio = float(data['punteggio']) if data['punteggio'] is not None else None
+        voto.note = data.get('note', voto.note)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'voto': voto.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/voti-esercizi/<int:id>', methods=['DELETE'])
+def delete_voto_esercizio(id):
+    """API per eliminare un voto di un esercizio"""
+    voto = VotoEsercizio.query.get_or_404(id)
+
+    try:
+        db.session.delete(voto)
         db.session.commit()
         return jsonify({'success': True})
     except Exception as e:
