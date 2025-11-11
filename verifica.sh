@@ -96,7 +96,7 @@ if [ "$all_files_exist" = true ]; then
     echo "3. Avvia applicazione:"
     echo "   $PYTHON_CMD run.py"
     echo ""
-    echo "4. Apri browser su: http://localhost:5000"
+    echo "4. Apri browser su: http://localhost:5001"
 else
     echo "❌ ALCUNI FILE MANCANO"
     echo ""

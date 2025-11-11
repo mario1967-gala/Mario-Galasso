@@ -195,7 +195,7 @@ oppure:
     * Serving Flask app 'app'
     * Debug mode: on
     WARNING: This is a development server.
-    * Running on http://127.0.0.1:5000
+    * Running on http://127.0.0.1:5001
     Press CTRL+C to quit
 
 ✅ L'applicazione ORA STA GIRANDO sul tuo computer!
@@ -211,11 +211,11 @@ Apri il tuo browser (Chrome, Firefox, Safari, Edge, ecc.)
 
 Nella barra degli indirizzi, scrivi:
 
-    http://localhost:5000
+    http://localhost:5001
 
 oppure:
 
-    http://127.0.0.1:5000
+    http://127.0.0.1:5001
 
 Premi INVIO
 
@@ -270,7 +270,7 @@ L'applicazione si fermerà.
 │  BROWSER (Chrome, Firefox, Safari, ecc.)                                 │
 ├──────────────────────────────────────────────────────────────────────────┤
 │  ✅ Usi l'applicazione qui:                                             │
-│     • http://localhost:5000                                              │
+│     • http://localhost:5001                                              │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ══════════════════════════════════════════════════════════════════════════
@@ -324,7 +324,7 @@ Apri il terminale e copia questi comandi uno alla volta:
     # 7. Avvia applicazione
     python3 run.py
 
-    # 8. Apri browser su: http://localhost:5000
+    # 8. Apri browser su: http://localhost:5001
 
 ══════════════════════════════════════════════════════════════════════════
 
@@ -340,9 +340,9 @@ Mentre esegui i comandi:
 [ ] Nessun errore
 
 Quando avvii l'app:
-[ ] Vedi "Running on http://127.0.0.1:5000"
+[ ] Vedi "Running on http://127.0.0.1:5001"
 [ ] Terminale ancora aperto
-[ ] Browser aperto su localhost:5000
+[ ] Browser aperto su localhost:5001
 [ ] Vedi la dashboard
 
 ══════════════════════════════════════════════════════════════════════════

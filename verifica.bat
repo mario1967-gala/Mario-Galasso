@@ -89,7 +89,7 @@ if "%all_ok%"=="1" (
     echo 3. Avvia applicazione:
     echo    python run.py
     echo.
-    echo 4. Apri browser su: http://localhost:5000
+    echo 4. Apri browser su: http://localhost:5001
 ) else (
     echo ALCUNI FILE MANCANO
     echo.
