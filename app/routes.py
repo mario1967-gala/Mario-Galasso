@@ -570,6 +570,11 @@ def compiti():
     """Pagina gestione compiti"""
     return render_template('compiti.html')
 
+@app.route('/verifiche')
+def verifiche():
+    """Pagina gestione verifiche (alias di compiti)"""
+    return render_template('compiti.html')
+
 @app.route('/api/compiti', methods=['GET'])
 def get_compiti():
     """API per ottenere tutti i compiti"""
